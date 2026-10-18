@@ -1,0 +1,39 @@
+{
+  "name": "what-to-eat",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test scripts/*.test.mjs",
+    "dev": "vite",
+    "dev:lan": "vite --host",
+    "start": "node server/index.ts",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build-only": "vite build && vite build --config director/vite.config.ts",
+    "build:director": "vite build --config director/vite.config.ts",
+    "type-check": "vue-tsc --build",
+    "director": "vite --config director/vite.config.ts",
+    "bridge": "node examples/stage-bridge.mjs",
+    "handover": "node scripts/pack-handover.mjs"
+  },
+  "dependencies": {
+    "pinia": "^4.0.3",
+    "vue": "^3.5.42",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.5",
+    "@types/node": "^24.13.4",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/tsconfig": "^0.9.1",
+    "less": "^4.9.1",
+    "npm-run-all2": "^9.0.3",
+    "typescript": "~6.0.0",
+    "vite": "^8.2.2",
+    "vue-tsc": "^3.3.11"
+  },
+  "engines": {
+    "node": "^22.18.0 || >=24.12.0"
+  }
+}

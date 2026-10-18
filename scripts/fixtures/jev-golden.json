@@ -1,0 +1,5546 @@
+{
+ "source": "agent-studio/server/jev.py build_state · build_questions · baseline; web/data/catalog.json (exported by a one-off script, do not edit by hand)",
+ "cast": [
+  {
+   "id": "rong",
+   "kind": "owner",
+   "name": "蓉姐",
+   "restaurant": "巴适川菜",
+   "plate": "川菜 · ¥85/人 · 1.2 km",
+   "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+   "cuisine": "川菜",
+   "keywords": [
+    "蓉姐",
+    "川菜",
+    "麻辣",
+    "辣",
+    "火锅",
+    "巴适"
+   ],
+   "defaults": {
+    "expr": "pitch",
+    "gesture": "hip_one",
+    "act": "stepIn",
+    "reaction": "eyeroll"
+   }
+  },
+  {
+   "id": "hua",
+   "kind": "owner",
+   "name": "华叔",
+   "restaurant": "华记粤点",
+   "plate": "粤菜 · ¥128/人 · 0.8 km",
+   "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+   "cuisine": "粤菜 / 早茶",
+   "keywords": [
+    "华叔",
+    "粤菜",
+    "早茶",
+    "老火汤",
+    "点心",
+    "华记"
+   ],
+   "defaults": {
+    "expr": "sly",
+    "gesture": "wag",
+    "act": "lean",
+    "reaction": "smug"
+   }
+  },
+  {
+   "id": "pierre",
+   "kind": "owner",
+   "name": "Pierre",
+   "restaurant": "Chez Pierre",
+   "plate": "法餐 · ¥198/人 · 2.1 km",
+   "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+   "cuisine": "法餐",
+   "keywords": [
+    "Pierre",
+    "法餐",
+    "法国",
+    "牛排",
+    "红酒",
+    "烛光",
+    "七道菜",
+    "Chez"
+   ],
+   "defaults": {
+    "expr": "proud",
+    "gesture": "present",
+    "act": "none",
+    "reaction": "haughty"
+   }
+  },
+  {
+   "id": "a7c3e1",
+   "kind": "owner",
+   "name": "炭叔",
+   "restaurant": "街角炭火",
+   "plate": "烧烤 · ¥76/人 · 0.6 km",
+   "persona": "街角烧烤摊老板，45 岁。豪爽、嗓门大，爱拍胸脯打包票；被说不卫生会立刻急眼。卖点：现烤现吃、人均 76、营业到凌晨两点。",
+   "cuisine": "烧烤 / 烤串",
+   "keywords": [
+    "炭叔",
+    "烧烤",
+    "烤串",
+    "炭火"
+   ],
+   "defaults": {
+    "expr": "pitch",
+    "gesture": "thumb",
+    "act": "bounce",
+    "reaction": "laugh"
+   }
+  },
+  {
+   "id": "orb",
+   "kind": "host",
+   "name": "小选",
+   "restaurant": "—",
+   "plate": "主持 · 需求收集 · 洞察 · 预订",
+   "persona": "无形象的中立选餐助手（呼吸光球）。收集模糊需求、筛选 top-3、在吃瓜中发现用户潜在需求并完成预订。",
+   "defaults": {
+    "expr": "idle",
+    "gesture": "rest",
+    "act": "none",
+    "reaction": "listen"
+   }
+  },
+  {
+   "id": "me",
+   "kind": "user",
+   "name": "我",
+   "restaurant": "—",
+   "plate": "台下顾客 · 今晚吃啥",
+   "persona": "台下的顾客（用户本人），正在纠结今晚吃什么：会提问、提要求、吐槽，也会一次回应好几家店。",
+   "keywords": [
+    "我",
+    "顾客",
+    "客人",
+    "你们"
+   ],
+   "defaults": {
+    "expr": "idle",
+    "gesture": "rest",
+    "act": "none",
+    "reaction": "listen"
+   }
+  }
+ ],
+ "keywords": {
+  "price": "人均|块|元|¥|百|千|便宜|套餐|划算|实惠|\\d",
+  "angry": "你不懂|凭什么|胡说|闭嘴|气死|太吵|什么鬼|艺术|！！|!{2,}",
+  "mock": "哈|笑|喊妈妈|晕|肿|泡面|公仔面|饿|还在|切开|吵",
+  "question": "？|\\?|吗|呢|咩|點|点解|仲点",
+  "concede": "算了|好吧|抢先|认输|祝|恭喜|服了|Bon appétit|行吧|啧",
+  "nervous": "那、那|其、其|只要|其实|不过|周末|呃|嗯",
+  "romance": "浪漫|约会|烛光|红酒|拍拖|情侣|露台",
+  "pitch": "来|正宗|新鲜|保证|巴适|好吃|招牌|最|包你|欢迎|嚟",
+  "greet": "你好|晚上好|bonjour|Bonjour|欢迎"
+ },
+ "sharedQuestions": {
+  "speaker_expr": {
+   "type": "choice",
+   "instructions": "按照 `style`，`speaker.name` 开口说 `line.text` 时，脸上最贴切的表情是哪一个？考虑人设 `speaker.persona`、这句话的情绪，以及它是否在回应 `quoted`。",
+   "criteria": {
+    "idle": "待机：眉眼放松、浅笑、淡腮红，随呼吸轻微起伏。 适用：没轮到自己、也没被点名时的默认状态。",
+    "listen": "倾听：眉微抬、头向发言者歪 4°、浅笑，瞳孔略放大。 适用：认真听别人说话，没有明显情绪。",
+    "pitch": "自信推销：双眉高扬、眼睁大、露齿笑、腮红加深，说话嘴型放大 1.1 倍，头略后仰。 适用：热情地推销自家卖点、报价格。",
+    "proud": "得意：双眉平抬、上眼皮半垂、斜嘴笑，头后仰 7°，带点优越感。 适用：自夸格调、讲自己有多高级。",
+    "wink": "抛媚眼：一只眼弯成 ^、另一只睁着，露齿笑，头歪 7°，星光特效。 适用：卖点说完后的俏皮收尾、点睛。",
+    "star": "星星眼：双眼变成金色旋转星星、大笑、腮红最深，眼睛放大 1.08 倍，星光特效。 适用：抓住机会、极度兴奋、被说中心意。",
+    "sly": "坏笑：一侧眉挑起、另一侧压低，半眯眼，斜嘴笑带酒窝。 适用：准备拆台、挖苦或揭对手短处。",
+    "eyeroll": "翻白眼：瞳孔上翻、上眼皮半垂、平嘴、头偏 -8°。 适用：对对手的夸张推销表示不屑、无语。",
+    "laugh": "大笑：眼睛弯成 ^^、张大嘴笑、腮红加深，说话嘴型放大 1.2 倍。 适用：被笑点逗乐、嘲笑对手出丑、自己讲笑话。",
+    "shock": "震惊：眉猛抬、眼放大 1.17 倍、瞳孔缩小一半、O 形嘴，头顶弹出红色感叹号，伴随头部挤压回弹。 适用：被戳中痛点、听到意外消息的瞬间。",
+    "sweat": "心虚流汗：八字眉、目光躲闪向下、波浪嘴，额角汗滴下落、脸颊红线。 适用：被揭短后心虚、底气不足。",
+    "angry": "生气：眉内端狠压 23°、额头泛红、咬牙嘴，怒气符号跳动，头顶冒烟。 适用：被冒犯后的激烈反击、气急败坏。",
+    "win": "胜利：眼睛弯成 ^^、大笑、腮红最深，星光特效。 适用：赢了、被用户选中、庆祝。",
+    "pout": "落选嘟嘴：八字眉、半闭眼看向下方、嘟嘴、腮红，头歪 7°。 适用：落选、被抢先、委屈但认了。",
+    "haughty": "高傲：双眼闭成弧线、斜嘴笑、头后仰 9°，不屑看对方。 适用：端架子、看不上这场争吵。",
+    "think": "思考：一侧眉挑起、视线看向右上方、平嘴、头歪 6°，头顶紫色问号。 适用：听到新信息在权衡、被问住。",
+    "kiss": "飞吻：双眼闭合、噘嘴飞吻（带唇色）、腮红，星光特效，头后仰 6°。 适用：法式浪漫、告别、讨好观众。",
+    "smug": "得意笑：眉一高一低、半眯眼、露齿笑，幸灾乐祸。 适用：看对手出丑、自己占上风。",
+    "nervous": "紧张赔笑：八字眉、眼放大、瞳孔缩小、勉强露齿笑、汗滴，说话嘴型略缩小。 适用：慌忙找补、结巴解释。",
+    "squeal": "笑到挤眼：双眼挤成 > <、张嘴大笑、腮红最深。 适用：被笑点击中、笑到失控。"
+   }
+  },
+  "speaker_punch": {
+   "type": "choice",
+   "instructions": "`speaker.name` 说到 `line.text` 的后半句（笑点或重点落下时），表情要切换成哪一个？没有明显转折就选 same。",
+   "criteria": {
+    "idle": "待机：眉眼放松、浅笑、淡腮红，随呼吸轻微起伏。 适用：没轮到自己、也没被点名时的默认状态。",
+    "listen": "倾听：眉微抬、头向发言者歪 4°、浅笑，瞳孔略放大。 适用：认真听别人说话，没有明显情绪。",
+    "pitch": "自信推销：双眉高扬、眼睁大、露齿笑、腮红加深，说话嘴型放大 1.1 倍，头略后仰。 适用：热情地推销自家卖点、报价格。",
+    "proud": "得意：双眉平抬、上眼皮半垂、斜嘴笑，头后仰 7°，带点优越感。 适用：自夸格调、讲自己有多高级。",
+    "wink": "抛媚眼：一只眼弯成 ^、另一只睁着，露齿笑，头歪 7°，星光特效。 适用：卖点说完后的俏皮收尾、点睛。",
+    "star": "星星眼：双眼变成金色旋转星星、大笑、腮红最深，眼睛放大 1.08 倍，星光特效。 适用：抓住机会、极度兴奋、被说中心意。",
+    "sly": "坏笑：一侧眉挑起、另一侧压低，半眯眼，斜嘴笑带酒窝。 适用：准备拆台、挖苦或揭对手短处。",
+    "eyeroll": "翻白眼：瞳孔上翻、上眼皮半垂、平嘴、头偏 -8°。 适用：对对手的夸张推销表示不屑、无语。",
+    "laugh": "大笑：眼睛弯成 ^^、张大嘴笑、腮红加深，说话嘴型放大 1.2 倍。 适用：被笑点逗乐、嘲笑对手出丑、自己讲笑话。",
+    "shock": "震惊：眉猛抬、眼放大 1.17 倍、瞳孔缩小一半、O 形嘴，头顶弹出红色感叹号，伴随头部挤压回弹。 适用：被戳中痛点、听到意外消息的瞬间。",
+    "sweat": "心虚流汗：八字眉、目光躲闪向下、波浪嘴，额角汗滴下落、脸颊红线。 适用：被揭短后心虚、底气不足。",
+    "angry": "生气：眉内端狠压 23°、额头泛红、咬牙嘴，怒气符号跳动，头顶冒烟。 适用：被冒犯后的激烈反击、气急败坏。",
+    "win": "胜利：眼睛弯成 ^^、大笑、腮红最深，星光特效。 适用：赢了、被用户选中、庆祝。",
+    "pout": "落选嘟嘴：八字眉、半闭眼看向下方、嘟嘴、腮红，头歪 7°。 适用：落选、被抢先、委屈但认了。",
+    "haughty": "高傲：双眼闭成弧线、斜嘴笑、头后仰 9°，不屑看对方。 适用：端架子、看不上这场争吵。",
+    "think": "思考：一侧眉挑起、视线看向右上方、平嘴、头歪 6°，头顶紫色问号。 适用：听到新信息在权衡、被问住。",
+    "kiss": "飞吻：双眼闭合、噘嘴飞吻（带唇色）、腮红，星光特效，头后仰 6°。 适用：法式浪漫、告别、讨好观众。",
+    "smug": "得意笑：眉一高一低、半眯眼、露齿笑，幸灾乐祸。 适用：看对手出丑、自己占上风。",
+    "nervous": "紧张赔笑：八字眉、眼放大、瞳孔缩小、勉强露齿笑、汗滴，说话嘴型略缩小。 适用：慌忙找补、结巴解释。",
+    "squeal": "笑到挤眼：双眼挤成 > <、张嘴大笑、腮红最深。 适用：被笑点击中、笑到失控。",
+    "same": "保持开口时的表情，不需要变化。"
+   }
+  },
+  "speaker_gesture": {
+   "type": "choice",
+   "instructions": "`speaker.name` 说 `line.text` 时最合适的手势是哪一个？",
+   "criteria": {
+    "rest": "自然垂手：双臂自然下垂、手掌张开。 适用：无特别动作。",
+    "hip": "双手叉腰：双手握拳叉在腰间。 适用：生气、不服气、气势压人。",
+    "hip_one": "单手叉腰：一只手叉腰，另一只手自然垂下。 适用：自信站姿、准备开讲。",
+    "hip_point": "叉腰指人：一手叉腰、另一手直指对方。 适用：气势汹汹地点名对手、反驳。",
+    "point": "伸手指人：一只手伸直指向对方。 适用：点名、揭短、指出对方问题。",
+    "thumb": "竖大拇指：一手叉腰、另一手竖起大拇指。 适用：夸自己好、打包票、点赞。",
+    "wave": "挥手招呼：一只手高举左右摆动（周期摆动）。 适用：热情招呼、来来来、打招呼。",
+    "wag": "摇食指：一只手竖起食指左右摇（周期摆动）。 适用：啧啧啧、不对不对、说教挖苦。",
+    "present": "摊手展示：一只手向侧前方摊开掌心。 适用：介绍菜品、展示卖点、请看。",
+    "shrug": "摊手耸肩：双手在身侧摊开向上。 适用：无奈、不屑、算了吧。",
+    "clasp": "双手合握：双手握拳合在胸前。 适用：期待、拜托、激动地憧憬。",
+    "kiss": "飞吻：手指贴唇再向外送出（两段动作）。 适用：浪漫、告别、讨好。",
+    "belly": "捧腹：双手捂在肚子前。 适用：笑弯腰、吃饱满足。",
+    "belly_one": "单手拍肚：一只手拍在肚子上。 适用：得意、心满意足、胸有成竹。",
+    "cheer": "双手欢呼：双臂高举过头。 适用：胜利、欢呼。",
+    "handsUp": "双手举起：双手举在肩上方、小幅抖动（周期摆动）。 适用：慌张辩解、投降、别激动。",
+    "bow": "鞠躬手势：双手收在身前配合低头。 适用：礼貌致意、认输告别。"
+   }
+  },
+  "speaker_act": {
+   "type": "choice",
+   "instructions": "按照 `style`，`speaker.name` 说 `line.text` 时配合的身体动作是哪一个？只有平静陈述才选 none。",
+   "criteria": {
+    "none": "无：不加身体动作，只保留呼吸和摆动。 适用：平静说话。",
+    "hop": "小跳：预备下蹲 → 跳起 38px（影子缩小变淡）→ 落地压扁回弹。 适用：吓一跳、兴奋得一蹦。",
+    "jump": "大跳：同小跳但跳起 110px。 适用：胜利、欢呼。",
+    "shake": "左右抖：身体左右急抖 6 次、幅度 7px 衰减。 适用：气得跺脚、激动强调。",
+    "bounce": "连续弹跳：身体连续小幅上下弹（10px）伴随轻微伸缩。 适用：笑得发抖、开心得停不下来。",
+    "nod": "点头：头部向下点 10px 后回位。 适用：同意、确认、嗯嗯。",
+    "lean": "倾身凑近：身体向一侧倾斜 8° 并平移 10px，保持后回正。 适用：凑近挖苦、套近乎、说悄悄话。",
+    "bow": "鞠躬：头部下沉 26px、身体压低 7%。 适用：致意、认输、告别。",
+    "puff": "鼓起胸膛：身体横向膨胀 5%、纵向 4%。 适用：自豪、气鼓鼓。",
+    "shiver": "发抖：身体高频细抖 2.2px。 适用：心虚、紧张、害怕。",
+    "stepIn": "上前一步：整体放大 6% 像向镜头走近，结束后回位。 适用：向观众推销、强调重点。"
+   }
+  },
+  "speaker_gaze": {
+   "type": "choice",
+   "instructions": "`speaker.name` 说 `line.text` 时眼睛看向哪里？",
+   "criteria": {
+    "quoted": "看向被引用/被回应的人（`quoted` 里的说话人）。",
+    "other": "看向台上另一位没被引用的人。",
+    "audience": "看向台下观众/镜头，对用户说话。"
+   }
+  },
+  "intensity": {
+   "type": "score",
+   "instructions": "`speaker.name` 说 `line.text` 时的情绪强度有多高？",
+   "criteria": [
+    "平静：语气平淡，几乎没有情绪起伏",
+    "温和：有一点情绪，轻松自然",
+    "鲜明：情绪明显，带感叹或反问",
+    "爆发：非常激动，大喊、炸毛或狂喜"
+   ]
+  },
+  "delivery": {
+   "type": "choice",
+   "instructions": "给 `speaker.name` 配音时，`line.text` 用哪种语气说最合适？",
+   "criteria": {
+    "neutral": "平常",
+    "excited": "兴奋热情",
+    "angry": "生气",
+    "mocking": "挖苦调侃",
+    "flustered": "慌张",
+    "sad": "委屈"
+   }
+  },
+  "stance": {
+   "type": "choice",
+   "instructions": "`line.text` 和被引用的话 `quoted`（可能有好几条）是什么关系？没有引用时通常是自我推销。",
+   "criteria": {
+    "pitch": "自我推销：介绍自家卖点，没有针对别人。",
+    "rebut": "反驳：直接否定被引用者说的话。",
+    "mock": "挖苦嘲讽：拿被引用者的话开玩笑、揭短。",
+    "defend": "辩解找补：被说中后为自己辩护、找台阶。",
+    "agree": "附和认同：同意被引用者，或顺着说。",
+    "concede": "认输退让：承认不如对方、礼貌认输。"
+   }
+  },
+  "bubble": {
+   "type": "choice",
+   "instructions": "头顶对话气泡用哪种样式最能表现这句话？",
+   "criteria": {
+    "normal": "普通气泡：正常说话、推销、调侃。",
+    "shout": "大喊气泡：粗边框、微倾斜，用于生气、炸毛、激动反击。",
+    "shaky": "发抖气泡：气泡抖动，用于慌张、心虚、结巴找补。"
+   }
+  }
+ },
+ "cases": [
+  {
+   "name": "店主自荐无引用",
+   "input": {
+    "speaker": "rong",
+    "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！",
+    "language": "四川话",
+    "quotes": [],
+    "history": [],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "hua",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "蓉姐",
+     "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+     "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。"
+    },
+    "line": {
+     "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！",
+     "language": "四川话"
+    },
+    "quoted": null,
+    "listeners": [
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     }
+    ],
+    "recent_turns": []
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_hua",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（华叔）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0,
+       "listen": 0.0001,
+       "pitch": 0.9991,
+       "proud": 0.0,
+       "wink": 0.0,
+       "star": 0.0,
+       "sly": 0.0,
+       "eyeroll": 0.0,
+       "laugh": 0.0,
+       "shock": 0.0,
+       "sweat": 0.0,
+       "angry": 0.0,
+       "win": 0.0,
+       "pout": 0.0,
+       "haughty": 0.0,
+       "think": 0.0,
+       "kiss": 0.0,
+       "smug": 0.0,
+       "nervous": 0.0,
+       "squeal": 0.0
+      },
+      "confidence": 0.999
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0,
+       "listen": 0.0001,
+       "pitch": 0.9811,
+       "proud": 0.0,
+       "wink": 0.018,
+       "star": 0.0,
+       "sly": 0.0,
+       "eyeroll": 0.0,
+       "laugh": 0.0,
+       "shock": 0.0,
+       "sweat": 0.0,
+       "angry": 0.0,
+       "win": 0.0,
+       "pout": 0.0,
+       "haughty": 0.0,
+       "think": 0.0,
+       "kiss": 0.0,
+       "smug": 0.0,
+       "nervous": 0.0,
+       "squeal": 0.0,
+       "same": 0.0001
+      },
+      "confidence": 0.98
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "thumb",
+      "probabilities": {
+       "rest": 0.0034,
+       "hip": 0.0034,
+       "hip_one": 0.0113,
+       "hip_point": 0.0034,
+       "point": 0.0034,
+       "thumb": 0.9239,
+       "wave": 0.0034,
+       "wag": 0.0034,
+       "present": 0.0169,
+       "shrug": 0.0034,
+       "clasp": 0.0034,
+       "kiss": 0.0034,
+       "belly": 0.0034,
+       "belly_one": 0.0034,
+       "cheer": 0.0034,
+       "handsUp": 0.0034,
+       "bow": 0.0034
+      },
+      "confidence": 0.919
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "stepIn",
+      "probabilities": {
+       "none": 0.0468,
+       "hop": 0.021,
+       "jump": 0.021,
+       "shake": 0.021,
+       "bounce": 0.021,
+       "nod": 0.021,
+       "lean": 0.021,
+       "bow": 0.021,
+       "puff": 0.1553,
+       "shiver": 0.021,
+       "stepIn": 0.6298
+      },
+      "confidence": 0.593
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "audience",
+      "probabilities": {
+       "quoted": 0.0054,
+       "other": 0.0067,
+       "audience": 0.9879
+      },
+      "confidence": 0.982
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "excited",
+      "probabilities": {
+       "neutral": 0.0098,
+       "excited": 0.9758,
+       "angry": 0.0036,
+       "mocking": 0.0036,
+       "flustered": 0.0036,
+       "sad": 0.0036
+      },
+      "confidence": 0.971
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.9204,
+       "rebut": 0.0153,
+       "mock": 0.0153,
+       "defend": 0.0153,
+       "agree": 0.0186,
+       "concede": 0.0153
+      },
+      "confidence": 0.904
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.5713,
+       "shout": 0.2567,
+       "shaky": 0.1721
+      },
+      "confidence": 0.357
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.457,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.1595,
+       "1": 0.355,
+       "2": 0.355,
+       "3": 0.1306
+      },
+      "confidence": 0.224
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.0777,
+       "shock": 0.0427,
+       "sweat": 0.0427,
+       "angry": 0.0427,
+       "laugh": 0.0427,
+       "squeal": 0.0427,
+       "eyeroll": 0.3153,
+       "smug": 0.095,
+       "sly": 0.0427,
+       "think": 0.0427,
+       "pout": 0.0427,
+       "nervous": 0.0427,
+       "haughty": 0.0427,
+       "star": 0.0427,
+       "idle": 0.0427
+      },
+      "confidence": 0.266
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.0777,
+       "shock": 0.0427,
+       "sweat": 0.0427,
+       "angry": 0.0427,
+       "laugh": 0.0427,
+       "squeal": 0.0427,
+       "eyeroll": 0.3153,
+       "smug": 0.0427,
+       "sly": 0.0427,
+       "think": 0.0427,
+       "pout": 0.0427,
+       "nervous": 0.0427,
+       "haughty": 0.095,
+       "star": 0.0427,
+       "idle": 0.0427
+      },
+      "confidence": 0.266
+     }
+    }
+   }
+  },
+  {
+   "name": "引用回怼",
+   "input": {
+    "speaker": "hua",
+    "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。",
+    "language": "粤语",
+    "quotes": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     }
+    ],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "华叔",
+     "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+     "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。"
+    },
+    "line": {
+     "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。",
+     "language": "粤语"
+    },
+    "quoted": [
+     {
+      "speaker": "蓉姐",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     }
+    ],
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": true,
+      "targeted": true,
+      "relation": "这句话在回应或针对他/她"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "sly",
+      "probabilities": {
+       "idle": 0.0112,
+       "listen": 0.0152,
+       "pitch": 0.025,
+       "proud": 0.0112,
+       "wink": 0.0112,
+       "star": 0.0112,
+       "sly": 0.7495,
+       "eyeroll": 0.0112,
+       "laugh": 0.0305,
+       "shock": 0.0112,
+       "sweat": 0.0112,
+       "angry": 0.0112,
+       "win": 0.0112,
+       "pout": 0.0112,
+       "haughty": 0.0112,
+       "think": 0.0112,
+       "kiss": 0.0112,
+       "smug": 0.0112,
+       "nervous": 0.0112,
+       "squeal": 0.0112
+      },
+      "confidence": 0.736
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "sly",
+      "probabilities": {
+       "idle": 0.0104,
+       "listen": 0.014,
+       "pitch": 0.0231,
+       "proud": 0.0104,
+       "wink": 0.0255,
+       "star": 0.0104,
+       "sly": 0.6911,
+       "eyeroll": 0.0104,
+       "laugh": 0.0627,
+       "shock": 0.0104,
+       "sweat": 0.0104,
+       "angry": 0.0104,
+       "win": 0.0104,
+       "pout": 0.0104,
+       "haughty": 0.0104,
+       "think": 0.0104,
+       "kiss": 0.0104,
+       "smug": 0.0104,
+       "nervous": 0.0104,
+       "squeal": 0.0104,
+       "same": 0.0282
+      },
+      "confidence": 0.676
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "wag",
+      "probabilities": {
+       "rest": 0.0334,
+       "hip": 0.0334,
+       "hip_one": 0.0334,
+       "hip_point": 0.1654,
+       "point": 0.0821,
+       "thumb": 0.0551,
+       "wave": 0.0334,
+       "wag": 0.2468,
+       "present": 0.0498,
+       "shrug": 0.0334,
+       "clasp": 0.0334,
+       "kiss": 0.0334,
+       "belly": 0.0334,
+       "belly_one": 0.0334,
+       "cheer": 0.0334,
+       "handsUp": 0.0334,
+       "bow": 0.0334
+      },
+      "confidence": 0.2
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "lean",
+      "probabilities": {
+       "none": 0.1299,
+       "hop": 0.0584,
+       "jump": 0.0584,
+       "shake": 0.0584,
+       "bounce": 0.1299,
+       "nod": 0.0584,
+       "lean": 0.2142,
+       "bow": 0.0584,
+       "puff": 0.0584,
+       "shiver": 0.0584,
+       "stepIn": 0.1175
+      },
+      "confidence": 0.136
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "quoted",
+      "probabilities": {
+       "quoted": 0.557,
+       "other": 0.1373,
+       "audience": 0.3057
+      },
+      "confidence": 0.335
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "neutral",
+      "probabilities": {
+       "neutral": 0.2601,
+       "excited": 0.1927,
+       "angry": 0.0957,
+       "mocking": 0.2601,
+       "flustered": 0.0957,
+       "sad": 0.0957
+      },
+      "confidence": 0.112
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "rebut",
+      "probabilities": {
+       "pitch": 0.1116,
+       "rebut": 0.5528,
+       "mock": 0.2034,
+       "defend": 0.0411,
+       "agree": 0.0501,
+       "concede": 0.0411
+      },
+      "confidence": 0.463
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.353,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.2267,
+       "1": 0.2769,
+       "2": 0.413,
+       "3": 0.0834
+      },
+      "confidence": 0.186
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "shock",
+      "probabilities": {
+       "listen": 0.0722,
+       "shock": 0.1607,
+       "sweat": 0.1316,
+       "angry": 0.1316,
+       "laugh": 0.0396,
+       "squeal": 0.0396,
+       "eyeroll": 0.1077,
+       "smug": 0.0396,
+       "sly": 0.0396,
+       "think": 0.0396,
+       "pout": 0.0396,
+       "nervous": 0.0396,
+       "haughty": 0.0396,
+       "star": 0.0396,
+       "idle": 0.0396
+      },
+      "confidence": 0.101
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "haughty",
+      "probabilities": {
+       "listen": 0.0933,
+       "shock": 0.0512,
+       "sweat": 0.0512,
+       "angry": 0.0512,
+       "laugh": 0.1031,
+       "squeal": 0.0512,
+       "eyeroll": 0.0844,
+       "smug": 0.0933,
+       "sly": 0.0512,
+       "think": 0.0512,
+       "pout": 0.0512,
+       "nervous": 0.0512,
+       "haughty": 0.1139,
+       "star": 0.0512,
+       "idle": 0.0512
+      },
+      "confidence": 0.051
+     }
+    }
+   }
+  },
+  {
+   "name": "点名别家",
+   "input": {
+    "speaker": "pierre",
+    "text": "华叔的点心？还不如泡面。要吃就来 Chez Pierre 吃烛光七道菜。",
+    "language": "法式口音普通话",
+    "quotes": [],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "hua"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "Pierre",
+     "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+     "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。"
+    },
+    "line": {
+     "text": "华叔的点心？还不如泡面。要吃就来 Chez Pierre 吃烛光七道菜。",
+     "language": "法式口音普通话"
+    },
+    "quoted": null,
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": true,
+      "relation": "这句话提到了他/她的店"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "speaker": "华叔",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_hua"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（华叔）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "proud",
+      "probabilities": {
+       "idle": 0.0272,
+       "listen": 0.0367,
+       "pitch": 0.0605,
+       "proud": 0.3657,
+       "wink": 0.0272,
+       "star": 0.0272,
+       "sly": 0.0558,
+       "eyeroll": 0.0272,
+       "laugh": 0.0738,
+       "shock": 0.0272,
+       "sweat": 0.0272,
+       "angry": 0.0272,
+       "win": 0.0272,
+       "pout": 0.0272,
+       "haughty": 0.0272,
+       "think": 0.0272,
+       "kiss": 0.0272,
+       "smug": 0.0272,
+       "nervous": 0.0272,
+       "squeal": 0.0272
+      },
+      "confidence": 0.332
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "proud",
+      "probabilities": {
+       "idle": 0.0211,
+       "listen": 0.0285,
+       "pitch": 0.047,
+       "proud": 0.2842,
+       "wink": 0.0519,
+       "star": 0.0211,
+       "sly": 0.0434,
+       "eyeroll": 0.0211,
+       "laugh": 0.1277,
+       "shock": 0.0211,
+       "sweat": 0.0211,
+       "angry": 0.0211,
+       "win": 0.0211,
+       "pout": 0.0211,
+       "haughty": 0.0211,
+       "think": 0.0211,
+       "kiss": 0.0856,
+       "smug": 0.0211,
+       "nervous": 0.0211,
+       "squeal": 0.0211,
+       "same": 0.0574
+      },
+      "confidence": 0.248
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "present",
+      "probabilities": {
+       "rest": 0.0361,
+       "hip": 0.0361,
+       "hip_one": 0.0361,
+       "hip_point": 0.0361,
+       "point": 0.0361,
+       "thumb": 0.0596,
+       "wave": 0.0361,
+       "wag": 0.0361,
+       "present": 0.3984,
+       "shrug": 0.0361,
+       "clasp": 0.0361,
+       "kiss": 0.0361,
+       "belly": 0.0361,
+       "belly_one": 0.0361,
+       "cheer": 0.0361,
+       "handsUp": 0.0361,
+       "bow": 0.0361
+      },
+      "confidence": 0.361
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "none",
+      "probabilities": {
+       "none": 0.2489,
+       "hop": 0.0614,
+       "jump": 0.0614,
+       "shake": 0.0614,
+       "bounce": 0.1366,
+       "nod": 0.0614,
+       "lean": 0.0614,
+       "bow": 0.0614,
+       "puff": 0.0614,
+       "shiver": 0.0614,
+       "stepIn": 0.1236
+      },
+      "confidence": 0.174
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "audience",
+      "probabilities": {
+       "quoted": 0.2024,
+       "other": 0.2473,
+       "audience": 0.5503
+      },
+      "confidence": 0.325
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "neutral",
+      "probabilities": {
+       "neutral": 0.3113,
+       "excited": 0.2306,
+       "angry": 0.1145,
+       "mocking": 0.1145,
+       "flustered": 0.1145,
+       "sad": 0.1145
+      },
+      "confidence": 0.174
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.7,
+       "rebut": 0.0575,
+       "mock": 0.0575,
+       "defend": 0.0575,
+       "agree": 0.0702,
+       "concede": 0.0575
+      },
+      "confidence": 0.64
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.228,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.2707,
+       "1": 0.3306,
+       "2": 0.2991,
+       "3": 0.0996
+      },
+      "confidence": 0.231
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.0943,
+       "shock": 0.0518,
+       "sweat": 0.0518,
+       "angry": 0.0518,
+       "laugh": 0.0518,
+       "squeal": 0.0518,
+       "eyeroll": 0.19,
+       "smug": 0.0518,
+       "sly": 0.0518,
+       "think": 0.0943,
+       "pout": 0.0518,
+       "nervous": 0.0518,
+       "haughty": 0.0518,
+       "star": 0.0518,
+       "idle": 0.0518
+      },
+      "confidence": 0.132
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "smug",
+      "probabilities": {
+       "listen": 0.0984,
+       "shock": 0.054,
+       "sweat": 0.054,
+       "angry": 0.054,
+       "laugh": 0.054,
+       "squeal": 0.054,
+       "eyeroll": 0.089,
+       "smug": 0.1202,
+       "sly": 0.054,
+       "think": 0.0984,
+       "pout": 0.054,
+       "nervous": 0.054,
+       "haughty": 0.054,
+       "star": 0.054,
+       "idle": 0.054
+      },
+      "confidence": 0.057
+     }
+    }
+   }
+  },
+  {
+   "name": "顾客提问",
+   "input": {
+    "speaker": "me",
+    "text": "今晚想吃点不太辣的，人均一百以内，你们谁家合适？",
+    "language": "普通话",
+    "quotes": [],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     },
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "hua",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "我（台下顾客）",
+     "restaurant": "—",
+     "persona": "台下的顾客（用户本人），正在纠结今晚吃什么：会提问、提要求、吐槽，也会一次回应好几家店。"
+    },
+    "line": {
+     "text": "今晚想吃点不太辣的，人均一百以内，你们谁家合适？",
+     "language": "普通话"
+    },
+    "quoted": null,
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": false,
+      "targeted": true,
+      "relation": "顾客点名问到了他/她的店"
+     },
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "顾客在说话，他/她在旁边听"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "顾客在说话，他/她在旁边听"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "speaker": "华叔",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     }
+    ]
+   },
+   "questionKeys": [
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_hua",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（华叔）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[2]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[2]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[2].relation` 和 `listeners[2].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "delivery": {
+      "type": "choice",
+      "choice": "neutral",
+      "probabilities": {
+       "neutral": 0.2881,
+       "excited": 0.2881,
+       "angry": 0.106,
+       "mocking": 0.106,
+       "flustered": 0.106,
+       "sad": 0.106
+      },
+      "confidence": 0.146
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.8385,
+       "rebut": 0.0309,
+       "mock": 0.0309,
+       "defend": 0.0309,
+       "agree": 0.0378,
+       "concede": 0.0309
+      },
+      "confidence": 0.806
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.242,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.2879,
+       "1": 0.2879,
+       "2": 0.3182,
+       "3": 0.1059
+      },
+      "confidence": 0.03
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "sweat",
+      "probabilities": {
+       "listen": 0.0732,
+       "shock": 0.0402,
+       "sweat": 0.1991,
+       "angry": 0.0402,
+       "laugh": 0.0402,
+       "squeal": 0.0402,
+       "eyeroll": 0.0895,
+       "smug": 0.0402,
+       "sly": 0.0402,
+       "think": 0.0732,
+       "pout": 0.0402,
+       "nervous": 0.0402,
+       "haughty": 0.0402,
+       "star": 0.163,
+       "idle": 0.0402
+      },
+      "confidence": 0.142
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "smug",
+      "probabilities": {
+       "listen": 0.0984,
+       "shock": 0.054,
+       "sweat": 0.054,
+       "angry": 0.054,
+       "laugh": 0.054,
+       "squeal": 0.054,
+       "eyeroll": 0.054,
+       "smug": 0.1202,
+       "sly": 0.054,
+       "think": 0.0984,
+       "pout": 0.054,
+       "nervous": 0.054,
+       "haughty": 0.054,
+       "star": 0.089,
+       "idle": 0.054
+      },
+      "confidence": 0.057
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "haughty",
+      "probabilities": {
+       "listen": 0.0984,
+       "shock": 0.054,
+       "sweat": 0.054,
+       "angry": 0.054,
+       "laugh": 0.054,
+       "squeal": 0.054,
+       "eyeroll": 0.054,
+       "smug": 0.054,
+       "sly": 0.054,
+       "think": 0.0984,
+       "pout": 0.054,
+       "nervous": 0.054,
+       "haughty": 0.1202,
+       "star": 0.089,
+       "idle": 0.054
+      },
+      "confidence": 0.057
+     }
+    }
+   }
+  },
+  {
+   "name": "顾客回应多家",
+   "input": {
+    "speaker": "me",
+    "text": "你们俩先别吵，我就想知道哪家离我近、今晚还能订到位子？",
+    "language": "普通话",
+    "quotes": [
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     },
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "hua",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "我（台下顾客）",
+     "restaurant": "—",
+     "persona": "台下的顾客（用户本人），正在纠结今晚吃什么：会提问、提要求、吐槽，也会一次回应好几家店。"
+    },
+    "line": {
+     "text": "你们俩先别吵，我就想知道哪家离我近、今晚还能订到位子？",
+     "language": "普通话"
+    },
+    "quoted": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": true,
+      "targeted": true,
+      "relation": "顾客在直接回应他/她"
+     },
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": true,
+      "targeted": true,
+      "relation": "顾客在直接回应他/她"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "顾客在说话，他/她在旁边听"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ]
+   },
+   "questionKeys": [
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_hua",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（华叔）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[2]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[2]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[2].relation` 和 `listeners[2].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "delivery": {
+      "type": "choice",
+      "choice": "neutral",
+      "probabilities": {
+       "neutral": 0.2881,
+       "excited": 0.106,
+       "angry": 0.106,
+       "mocking": 0.2881,
+       "flustered": 0.106,
+       "sad": 0.106
+      },
+      "confidence": 0.146
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "rebut",
+      "probabilities": {
+       "pitch": 0.1604,
+       "rebut": 0.3571,
+       "mock": 0.2923,
+       "defend": 0.059,
+       "agree": 0.0721,
+       "concede": 0.059
+      },
+      "confidence": 0.228
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.242,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.2879,
+       "1": 0.2879,
+       "2": 0.3182,
+       "3": 0.1059
+      },
+      "confidence": 0.03
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "star",
+      "probabilities": {
+       "listen": 0.0871,
+       "shock": 0.0478,
+       "sweat": 0.0478,
+       "angry": 0.0478,
+       "laugh": 0.0478,
+       "squeal": 0.0478,
+       "eyeroll": 0.1064,
+       "smug": 0.0478,
+       "sly": 0.0478,
+       "think": 0.0871,
+       "pout": 0.0478,
+       "nervous": 0.0478,
+       "haughty": 0.0478,
+       "star": 0.1938,
+       "idle": 0.0478
+      },
+      "confidence": 0.136
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "star",
+      "probabilities": {
+       "listen": 0.0871,
+       "shock": 0.0478,
+       "sweat": 0.0478,
+       "angry": 0.0478,
+       "laugh": 0.0478,
+       "squeal": 0.0478,
+       "eyeroll": 0.0478,
+       "smug": 0.1064,
+       "sly": 0.0478,
+       "think": 0.0871,
+       "pout": 0.0478,
+       "nervous": 0.0478,
+       "haughty": 0.0478,
+       "star": 0.1938,
+       "idle": 0.0478
+      },
+      "confidence": 0.136
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "haughty",
+      "probabilities": {
+       "listen": 0.0984,
+       "shock": 0.054,
+       "sweat": 0.054,
+       "angry": 0.054,
+       "laugh": 0.054,
+       "squeal": 0.054,
+       "eyeroll": 0.054,
+       "smug": 0.054,
+       "sly": 0.054,
+       "think": 0.0984,
+       "pout": 0.054,
+       "nervous": 0.054,
+       "haughty": 0.1202,
+       "star": 0.089,
+       "idle": 0.054
+      },
+      "confidence": 0.057
+     }
+    }
+   }
+  },
+  {
+   "name": "主持人说话",
+   "input": {
+    "speaker": "orb",
+    "text": "我注意到用户想约会，又馋辣，人均别超过两百。",
+    "language": "普通话",
+    "quotes": [],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     },
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "hua",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "小选",
+     "restaurant": "—（主持 · 需求收集 · 洞察 · 预订）",
+     "persona": "无形象的中立选餐助手（呼吸光球）。收集模糊需求、筛选 top-3、在吃瓜中发现用户潜在需求并完成预订。"
+    },
+    "line": {
+     "text": "我注意到用户想约会，又馋辣，人均别超过两百。",
+     "language": "普通话"
+    },
+    "quoted": null,
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": false,
+      "targeted": true,
+      "relation": "这句话提到了他/她的店"
+     },
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_hua",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（华叔）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[2]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[2]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[2].relation` 和 `listeners[2].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0806,
+       "listen": 0.0328,
+       "pitch": 0.3994,
+       "proud": 0.0985,
+       "wink": 0.0243,
+       "star": 0.0243,
+       "sly": 0.0243,
+       "eyeroll": 0.0243,
+       "laugh": 0.0243,
+       "shock": 0.0243,
+       "sweat": 0.0243,
+       "angry": 0.0243,
+       "win": 0.0243,
+       "pout": 0.0243,
+       "haughty": 0.0243,
+       "think": 0.0243,
+       "kiss": 0.0243,
+       "smug": 0.0243,
+       "nervous": 0.0243,
+       "squeal": 0.0243
+      },
+      "confidence": 0.368
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0719,
+       "listen": 0.0292,
+       "pitch": 0.3559,
+       "proud": 0.0878,
+       "wink": 0.0719,
+       "star": 0.0216,
+       "sly": 0.0216,
+       "eyeroll": 0.0216,
+       "laugh": 0.0216,
+       "shock": 0.0216,
+       "sweat": 0.0216,
+       "angry": 0.0216,
+       "win": 0.0216,
+       "pout": 0.0216,
+       "haughty": 0.0216,
+       "think": 0.0216,
+       "kiss": 0.0216,
+       "smug": 0.0216,
+       "nervous": 0.0216,
+       "squeal": 0.0216,
+       "same": 0.0588
+      },
+      "confidence": 0.324
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "thumb",
+      "probabilities": {
+       "rest": 0.1297,
+       "hip": 0.0391,
+       "hip_one": 0.0391,
+       "hip_point": 0.0391,
+       "point": 0.0391,
+       "thumb": 0.2364,
+       "wave": 0.0391,
+       "wag": 0.0391,
+       "present": 0.087,
+       "shrug": 0.0391,
+       "clasp": 0.0391,
+       "kiss": 0.0391,
+       "belly": 0.0391,
+       "belly_one": 0.0391,
+       "cheer": 0.0391,
+       "handsUp": 0.0391,
+       "bow": 0.0391
+      },
+      "confidence": 0.189
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "none",
+      "probabilities": {
+       "none": 0.2571,
+       "hop": 0.0634,
+       "jump": 0.0634,
+       "shake": 0.0634,
+       "bounce": 0.0634,
+       "nod": 0.0634,
+       "lean": 0.0634,
+       "bow": 0.0634,
+       "puff": 0.1723,
+       "shiver": 0.0634,
+       "stepIn": 0.0634
+      },
+      "confidence": 0.183
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "audience",
+      "probabilities": {
+       "quoted": 0.1394,
+       "other": 0.1702,
+       "audience": 0.6904
+      },
+      "confidence": 0.536
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "neutral",
+      "probabilities": {
+       "neutral": 0.2881,
+       "excited": 0.2881,
+       "angry": 0.106,
+       "mocking": 0.106,
+       "flustered": 0.106,
+       "sad": 0.106
+      },
+      "confidence": 0.146
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.8385,
+       "rebut": 0.0309,
+       "mock": 0.0309,
+       "defend": 0.0309,
+       "agree": 0.0378,
+       "concede": 0.0309
+      },
+      "confidence": 0.806
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.134,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.3291,
+       "1": 0.3291,
+       "2": 0.2206,
+       "3": 0.1211
+      },
+      "confidence": 0.0
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.102,
+       "shock": 0.056,
+       "sweat": 0.056,
+       "angry": 0.056,
+       "laugh": 0.056,
+       "squeal": 0.056,
+       "eyeroll": 0.1245,
+       "smug": 0.056,
+       "sly": 0.056,
+       "think": 0.102,
+       "pout": 0.056,
+       "nervous": 0.056,
+       "haughty": 0.056,
+       "star": 0.056,
+       "idle": 0.056
+      },
+      "confidence": 0.062
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "smug",
+      "probabilities": {
+       "listen": 0.102,
+       "shock": 0.056,
+       "sweat": 0.056,
+       "angry": 0.056,
+       "laugh": 0.056,
+       "squeal": 0.056,
+       "eyeroll": 0.056,
+       "smug": 0.1245,
+       "sly": 0.056,
+       "think": 0.102,
+       "pout": 0.056,
+       "nervous": 0.056,
+       "haughty": 0.056,
+       "star": 0.056,
+       "idle": 0.056
+      },
+      "confidence": 0.062
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "haughty",
+      "probabilities": {
+       "listen": 0.102,
+       "shock": 0.056,
+       "sweat": 0.056,
+       "angry": 0.056,
+       "laugh": 0.056,
+       "squeal": 0.056,
+       "eyeroll": 0.056,
+       "smug": 0.056,
+       "sly": 0.056,
+       "think": 0.102,
+       "pout": 0.056,
+       "nervous": 0.056,
+       "haughty": 0.1245,
+       "star": 0.056,
+       "idle": 0.056
+      },
+      "confidence": 0.062
+     }
+    }
+   }
+  },
+  {
+   "name": "多条引用",
+   "input": {
+    "speaker": "rong",
+    "text": "你们两个一个汤一个贵，哈哈，还在吵？今晚来我屋头吃火锅嘛！",
+    "language": "四川话",
+    "quotes": [
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     },
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "hua",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "蓉姐",
+     "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+     "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。"
+    },
+    "line": {
+     "text": "你们两个一个汤一个贵，哈哈，还在吵？今晚来我屋头吃火锅嘛！",
+     "language": "四川话"
+    },
+    "quoted": [
+     {
+      "speaker": "华叔",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "listeners": [
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": true,
+      "targeted": true,
+      "relation": "这句话在回应或针对他/她"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": true,
+      "targeted": true,
+      "relation": "这句话在回应或针对他/她"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_hua",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（华叔）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "sly",
+      "probabilities": {
+       "idle": 0.0004,
+       "listen": 0.0005,
+       "pitch": 0.0029,
+       "proud": 0.0004,
+       "wink": 0.0004,
+       "star": 0.0004,
+       "sly": 0.9685,
+       "eyeroll": 0.0004,
+       "laugh": 0.0217,
+       "shock": 0.0004,
+       "sweat": 0.0004,
+       "angry": 0.0004,
+       "win": 0.0004,
+       "pout": 0.0004,
+       "haughty": 0.0004,
+       "think": 0.0004,
+       "kiss": 0.0004,
+       "smug": 0.0004,
+       "nervous": 0.0004,
+       "squeal": 0.0004
+      },
+      "confidence": 0.967
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "sly",
+      "probabilities": {
+       "idle": 0.0003,
+       "listen": 0.0004,
+       "pitch": 0.0019,
+       "proud": 0.0003,
+       "wink": 0.0006,
+       "star": 0.0003,
+       "sly": 0.6408,
+       "eyeroll": 0.0003,
+       "laugh": 0.3517,
+       "shock": 0.0003,
+       "sweat": 0.0003,
+       "angry": 0.0003,
+       "win": 0.0003,
+       "pout": 0.0003,
+       "haughty": 0.0003,
+       "think": 0.0003,
+       "kiss": 0.0003,
+       "smug": 0.0003,
+       "nervous": 0.0003,
+       "squeal": 0.0003,
+       "same": 0.0007
+      },
+      "confidence": 0.623
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "point",
+      "probabilities": {
+       "rest": 0.0124,
+       "hip": 0.0124,
+       "hip_one": 0.0411,
+       "hip_point": 0.0275,
+       "point": 0.4529,
+       "thumb": 0.0204,
+       "wave": 0.0124,
+       "wag": 0.3036,
+       "present": 0.0185,
+       "shrug": 0.0124,
+       "clasp": 0.0124,
+       "kiss": 0.0124,
+       "belly": 0.0124,
+       "belly_one": 0.0124,
+       "cheer": 0.0124,
+       "handsUp": 0.0124,
+       "bow": 0.0124
+      },
+      "confidence": 0.419
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "bounce",
+      "probabilities": {
+       "none": 0.0413,
+       "hop": 0.0186,
+       "jump": 0.0186,
+       "shake": 0.0186,
+       "bounce": 0.4554,
+       "nod": 0.0186,
+       "lean": 0.3053,
+       "bow": 0.0186,
+       "puff": 0.0186,
+       "shiver": 0.0186,
+       "stepIn": 0.0681
+      },
+      "confidence": 0.401
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "quoted",
+      "probabilities": {
+       "quoted": 0.557,
+       "other": 0.1373,
+       "audience": 0.3057
+      },
+      "confidence": 0.335
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "mocking",
+      "probabilities": {
+       "neutral": 0.0429,
+       "excited": 0.0474,
+       "angry": 0.0158,
+       "mocking": 0.8622,
+       "flustered": 0.0158,
+       "sad": 0.0158
+      },
+      "confidence": 0.835
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "mock",
+      "probabilities": {
+       "pitch": 0.0244,
+       "rebut": 0.0543,
+       "mock": 0.8924,
+       "defend": 0.009,
+       "agree": 0.011,
+       "concede": 0.009
+      },
+      "confidence": 0.871
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.441,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.209,
+       "1": 0.2553,
+       "2": 0.4209,
+       "3": 0.1147
+      },
+      "confidence": 0.212
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "shock",
+      "probabilities": {
+       "listen": 0.038,
+       "shock": 0.511,
+       "sweat": 0.038,
+       "angry": 0.1539,
+       "laugh": 0.0208,
+       "squeal": 0.0208,
+       "eyeroll": 0.0254,
+       "smug": 0.0464,
+       "sly": 0.0208,
+       "think": 0.0208,
+       "pout": 0.0208,
+       "nervous": 0.0208,
+       "haughty": 0.0208,
+       "star": 0.0208,
+       "idle": 0.0208
+      },
+      "confidence": 0.476
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "shock",
+      "probabilities": {
+       "listen": 0.038,
+       "shock": 0.511,
+       "sweat": 0.038,
+       "angry": 0.1539,
+       "laugh": 0.0208,
+       "squeal": 0.0208,
+       "eyeroll": 0.0254,
+       "smug": 0.0208,
+       "sly": 0.0208,
+       "think": 0.0208,
+       "pout": 0.0208,
+       "nervous": 0.0208,
+       "haughty": 0.0464,
+       "star": 0.0208,
+       "idle": 0.0208
+      },
+      "confidence": 0.476
+     }
+    }
+   }
+  },
+  {
+   "name": "感叹生气",
+   "input": {
+    "speaker": "pierre",
+    "text": "那叫艺术！！你不懂法餐，凭什么说贵！！",
+    "language": "法式口音普通话",
+    "quotes": [
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     },
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "hua"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "Pierre",
+     "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+     "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。"
+    },
+    "line": {
+     "text": "那叫艺术！！你不懂法餐，凭什么说贵！！",
+     "language": "法式口音普通话"
+    },
+    "quoted": [
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": true,
+      "targeted": true,
+      "relation": "这句话在回应或针对他/她"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_hua"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（华叔）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "angry",
+      "probabilities": {
+       "idle": 0.0,
+       "listen": 0.0,
+       "pitch": 0.0,
+       "proud": 0.0,
+       "wink": 0.0,
+       "star": 0.0,
+       "sly": 0.0,
+       "eyeroll": 0.0,
+       "laugh": 0.0,
+       "shock": 0.0,
+       "sweat": 0.0,
+       "angry": 0.9998,
+       "win": 0.0,
+       "pout": 0.0,
+       "haughty": 0.0,
+       "think": 0.0,
+       "kiss": 0.0,
+       "smug": 0.0,
+       "nervous": 0.0,
+       "squeal": 0.0
+      },
+      "confidence": 1.0
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "angry",
+      "probabilities": {
+       "idle": 0.0,
+       "listen": 0.0,
+       "pitch": 0.0,
+       "proud": 0.0,
+       "wink": 0.0,
+       "star": 0.0,
+       "sly": 0.0,
+       "eyeroll": 0.0,
+       "laugh": 0.0,
+       "shock": 0.0,
+       "sweat": 0.0,
+       "angry": 0.9998,
+       "win": 0.0,
+       "pout": 0.0,
+       "haughty": 0.0,
+       "think": 0.0,
+       "kiss": 0.0,
+       "smug": 0.0,
+       "nervous": 0.0,
+       "squeal": 0.0,
+       "same": 0.0
+      },
+      "confidence": 1.0
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "hip_point",
+      "probabilities": {
+       "rest": 0.0003,
+       "hip": 0.0003,
+       "hip_one": 0.0003,
+       "hip_point": 0.9939,
+       "point": 0.0003,
+       "thumb": 0.0003,
+       "wave": 0.0003,
+       "wag": 0.0003,
+       "present": 0.0011,
+       "shrug": 0.0003,
+       "clasp": 0.0003,
+       "kiss": 0.0003,
+       "belly": 0.0003,
+       "belly_one": 0.0003,
+       "cheer": 0.0003,
+       "handsUp": 0.0003,
+       "bow": 0.0003
+      },
+      "confidence": 0.994
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "shake",
+      "probabilities": {
+       "none": 0.0014,
+       "hop": 0.0003,
+       "jump": 0.0003,
+       "shake": 0.9956,
+       "bounce": 0.0003,
+       "nod": 0.0003,
+       "lean": 0.0003,
+       "bow": 0.0003,
+       "puff": 0.0003,
+       "shiver": 0.0003,
+       "stepIn": 0.0003
+      },
+      "confidence": 0.995
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "quoted",
+      "probabilities": {
+       "quoted": 0.6461,
+       "other": 0.1593,
+       "audience": 0.1946
+      },
+      "confidence": 0.469
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "angry",
+      "probabilities": {
+       "neutral": 0.0009,
+       "excited": 0.0017,
+       "angry": 0.9964,
+       "mocking": 0.0003,
+       "flustered": 0.0003,
+       "sad": 0.0003
+      },
+      "confidence": 0.996
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "rebut",
+      "probabilities": {
+       "pitch": 0.0155,
+       "rebut": 0.8468,
+       "mock": 0.0104,
+       "defend": 0.1146,
+       "agree": 0.007,
+       "concede": 0.0057
+      },
+      "confidence": 0.816
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "shout",
+      "probabilities": {
+       "normal": 0.0001,
+       "shout": 0.9998,
+       "shaky": 0.0
+      },
+      "confidence": 1.0
+     },
+     "intensity": {
+      "type": "score",
+      "score": 2.994,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.0005,
+       "1": 0.0005,
+       "2": 0.0037,
+       "3": 0.9953
+      },
+      "confidence": 0.994
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.102,
+       "shock": 0.056,
+       "sweat": 0.056,
+       "angry": 0.056,
+       "laugh": 0.056,
+       "squeal": 0.056,
+       "eyeroll": 0.1245,
+       "smug": 0.102,
+       "sly": 0.056,
+       "think": 0.056,
+       "pout": 0.056,
+       "nervous": 0.056,
+       "haughty": 0.056,
+       "star": 0.056,
+       "idle": 0.056
+      },
+      "confidence": 0.062
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "shock",
+      "probabilities": {
+       "listen": 0.0985,
+       "shock": 0.1203,
+       "sweat": 0.0541,
+       "angry": 0.0541,
+       "laugh": 0.0541,
+       "squeal": 0.0541,
+       "eyeroll": 0.066,
+       "smug": 0.1203,
+       "sly": 0.0541,
+       "think": 0.0541,
+       "pout": 0.0541,
+       "nervous": 0.0541,
+       "haughty": 0.0541,
+       "star": 0.0541,
+       "idle": 0.0541
+      },
+      "confidence": 0.058
+     }
+    }
+   }
+  },
+  {
+   "name": "浪漫（Pierre 飞吻加成）",
+   "input": {
+    "speaker": "pierre",
+    "text": "浪漫的约会，就该有烛光和红酒，来 Chez Pierre 吧。",
+    "language": "法式口音普通话",
+    "quotes": [],
+    "history": [],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "hua"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "Pierre",
+     "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+     "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。"
+    },
+    "line": {
+     "text": "浪漫的约会，就该有烛光和红酒，来 Chez Pierre 吧。",
+     "language": "法式口音普通话"
+    },
+    "quoted": null,
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     }
+    ],
+    "recent_turns": []
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_hua"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（华叔）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "proud",
+      "probabilities": {
+       "idle": 0.0011,
+       "listen": 0.0015,
+       "pitch": 0.0024,
+       "proud": 0.9776,
+       "wink": 0.0011,
+       "star": 0.0011,
+       "sly": 0.0011,
+       "eyeroll": 0.0011,
+       "laugh": 0.0011,
+       "shock": 0.0011,
+       "sweat": 0.0011,
+       "angry": 0.0011,
+       "win": 0.0011,
+       "pout": 0.0011,
+       "haughty": 0.0011,
+       "think": 0.0011,
+       "kiss": 0.0011,
+       "smug": 0.0011,
+       "nervous": 0.0011,
+       "squeal": 0.0011
+      },
+      "confidence": 0.976
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "proud",
+      "probabilities": {
+       "idle": 0.0008,
+       "listen": 0.0011,
+       "pitch": 0.0019,
+       "proud": 0.7532,
+       "wink": 0.0021,
+       "star": 0.0008,
+       "sly": 0.0008,
+       "eyeroll": 0.0008,
+       "laugh": 0.0008,
+       "shock": 0.0008,
+       "sweat": 0.0008,
+       "angry": 0.0008,
+       "win": 0.0008,
+       "pout": 0.0008,
+       "haughty": 0.0008,
+       "think": 0.0008,
+       "kiss": 0.2269,
+       "smug": 0.0008,
+       "nervous": 0.0008,
+       "squeal": 0.0008,
+       "same": 0.0023
+      },
+      "confidence": 0.741
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "present",
+      "probabilities": {
+       "rest": 0.0072,
+       "hip": 0.0072,
+       "hip_one": 0.0072,
+       "hip_point": 0.0072,
+       "point": 0.0072,
+       "thumb": 0.0119,
+       "wave": 0.0072,
+       "wag": 0.0072,
+       "present": 0.8795,
+       "shrug": 0.0072,
+       "clasp": 0.0072,
+       "kiss": 0.0072,
+       "belly": 0.0072,
+       "belly_one": 0.0072,
+       "cheer": 0.0072,
+       "handsUp": 0.0072,
+       "bow": 0.0072
+      },
+      "confidence": 0.872
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "none",
+      "probabilities": {
+       "none": 0.2691,
+       "hop": 0.0664,
+       "jump": 0.0664,
+       "shake": 0.0664,
+       "bounce": 0.0664,
+       "nod": 0.0664,
+       "lean": 0.0664,
+       "bow": 0.0664,
+       "puff": 0.0664,
+       "shiver": 0.0664,
+       "stepIn": 0.1336
+      },
+      "confidence": 0.196
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "audience",
+      "probabilities": {
+       "quoted": 0.2024,
+       "other": 0.2473,
+       "audience": 0.5503
+      },
+      "confidence": 0.325
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "neutral",
+      "probabilities": {
+       "neutral": 0.3113,
+       "excited": 0.2306,
+       "angry": 0.1145,
+       "mocking": 0.1145,
+       "flustered": 0.1145,
+       "sad": 0.1145
+      },
+      "confidence": 0.174
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.7,
+       "rebut": 0.0575,
+       "mock": 0.0575,
+       "defend": 0.0575,
+       "agree": 0.0702,
+       "concede": 0.0575
+      },
+      "confidence": 0.64
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.125,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.3068,
+       "1": 0.3747,
+       "2": 0.2056,
+       "3": 0.1129
+      },
+      "confidence": 0.262
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "think",
+      "probabilities": {
+       "listen": 0.0639,
+       "shock": 0.0351,
+       "sweat": 0.0351,
+       "angry": 0.0351,
+       "laugh": 0.0351,
+       "squeal": 0.0351,
+       "eyeroll": 0.1287,
+       "smug": 0.0351,
+       "sly": 0.0351,
+       "think": 0.3866,
+       "pout": 0.0351,
+       "nervous": 0.0351,
+       "haughty": 0.0351,
+       "star": 0.0351,
+       "idle": 0.0351
+      },
+      "confidence": 0.343
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "think",
+      "probabilities": {
+       "listen": 0.0657,
+       "shock": 0.0361,
+       "sweat": 0.0361,
+       "angry": 0.0361,
+       "laugh": 0.0361,
+       "squeal": 0.0361,
+       "eyeroll": 0.0595,
+       "smug": 0.0803,
+       "sly": 0.0361,
+       "think": 0.3977,
+       "pout": 0.0361,
+       "nervous": 0.0361,
+       "haughty": 0.0361,
+       "star": 0.0361,
+       "idle": 0.0361
+      },
+      "confidence": 0.355
+     }
+    }
+   }
+  },
+  {
+   "name": "浪漫（蓉姐星星眼加成）",
+   "input": {
+    "speaker": "rong",
+    "text": "约会？来我屋头露台包间嘛，浪漫又巴适，人均才85！",
+    "language": "四川话",
+    "quotes": [
+     {
+      "who": "orb",
+      "text": "我注意到用户想约会，又馋辣，人均别超过两百。"
+     }
+    ],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     },
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "hua",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "蓉姐",
+     "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+     "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。"
+    },
+    "line": {
+     "text": "约会？来我屋头露台包间嘛，浪漫又巴适，人均才85！",
+     "language": "四川话"
+    },
+    "quoted": [
+     {
+      "speaker": "小选",
+      "text": "我注意到用户想约会，又馋辣，人均别超过两百。"
+     }
+    ],
+    "listeners": [
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_hua",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（华叔）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0008,
+       "listen": 0.0011,
+       "pitch": 0.9127,
+       "proud": 0.0555,
+       "wink": 0.0008,
+       "star": 0.0167,
+       "sly": 0.0015,
+       "eyeroll": 0.0008,
+       "laugh": 0.0008,
+       "shock": 0.0008,
+       "sweat": 0.0008,
+       "angry": 0.0008,
+       "win": 0.0008,
+       "pout": 0.0008,
+       "haughty": 0.0008,
+       "think": 0.0008,
+       "kiss": 0.0008,
+       "smug": 0.0008,
+       "nervous": 0.0008,
+       "squeal": 0.0008
+      },
+      "confidence": 0.908
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0008,
+       "listen": 0.0011,
+       "pitch": 0.8845,
+       "proud": 0.0538,
+       "wink": 0.0295,
+       "star": 0.0162,
+       "sly": 0.0015,
+       "eyeroll": 0.0008,
+       "laugh": 0.0008,
+       "shock": 0.0008,
+       "sweat": 0.0008,
+       "angry": 0.0008,
+       "win": 0.0008,
+       "pout": 0.0008,
+       "haughty": 0.0008,
+       "think": 0.0008,
+       "kiss": 0.0008,
+       "smug": 0.0008,
+       "nervous": 0.0008,
+       "squeal": 0.0008,
+       "same": 0.0022
+      },
+      "confidence": 0.879
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "thumb",
+      "probabilities": {
+       "rest": 0.012,
+       "hip": 0.012,
+       "hip_one": 0.0397,
+       "hip_point": 0.0266,
+       "point": 0.012,
+       "thumb": 0.4843,
+       "wave": 0.012,
+       "wag": 0.012,
+       "present": 0.2937,
+       "shrug": 0.012,
+       "clasp": 0.012,
+       "kiss": 0.012,
+       "belly": 0.012,
+       "belly_one": 0.012,
+       "cheer": 0.012,
+       "handsUp": 0.012,
+       "bow": 0.012
+      },
+      "confidence": 0.452
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "stepIn",
+      "probabilities": {
+       "none": 0.1007,
+       "hop": 0.0453,
+       "jump": 0.0453,
+       "shake": 0.0453,
+       "bounce": 0.0453,
+       "nod": 0.0453,
+       "lean": 0.0453,
+       "bow": 0.0453,
+       "puff": 0.2028,
+       "shiver": 0.0453,
+       "stepIn": 0.3344
+      },
+      "confidence": 0.268
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "audience",
+      "probabilities": {
+       "quoted": 0.1371,
+       "other": 0.0338,
+       "audience": 0.8291
+      },
+      "confidence": 0.744
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "excited",
+      "probabilities": {
+       "neutral": 0.0803,
+       "excited": 0.8014,
+       "angry": 0.0296,
+       "mocking": 0.0296,
+       "flustered": 0.0296,
+       "sad": 0.0296
+      },
+      "confidence": 0.762
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.4486,
+       "rebut": 0.3007,
+       "mock": 0.0906,
+       "defend": 0.0497,
+       "agree": 0.0607,
+       "concede": 0.0497
+      },
+      "confidence": 0.338
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.418,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.1978,
+       "1": 0.2952,
+       "2": 0.3984,
+       "3": 0.1086
+      },
+      "confidence": 0.201
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "think",
+      "probabilities": {
+       "listen": 0.0711,
+       "shock": 0.039,
+       "sweat": 0.039,
+       "angry": 0.039,
+       "laugh": 0.039,
+       "squeal": 0.039,
+       "eyeroll": 0.106,
+       "smug": 0.1581,
+       "sly": 0.039,
+       "think": 0.2359,
+       "pout": 0.039,
+       "nervous": 0.039,
+       "haughty": 0.039,
+       "star": 0.039,
+       "idle": 0.039
+      },
+      "confidence": 0.181
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "think",
+      "probabilities": {
+       "listen": 0.074,
+       "shock": 0.0406,
+       "sweat": 0.0406,
+       "angry": 0.0406,
+       "laugh": 0.0406,
+       "squeal": 0.0406,
+       "eyeroll": 0.1103,
+       "smug": 0.074,
+       "sly": 0.0406,
+       "think": 0.2455,
+       "pout": 0.0406,
+       "nervous": 0.0406,
+       "haughty": 0.0903,
+       "star": 0.0406,
+       "idle": 0.0406
+      },
+      "confidence": 0.192
+     }
+    }
+   }
+  },
+  {
+   "name": "认输（Pierre 鞠躬加成）",
+   "input": {
+    "speaker": "pierre",
+    "text": "好吧好吧，算了，我认输。祝你们今晚愉快，Bon appétit !",
+    "language": "法式口音普通话",
+    "quotes": [
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     }
+    ],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     },
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "hua"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "Pierre",
+     "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+     "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。"
+    },
+    "line": {
+     "text": "好吧好吧，算了，我认输。祝你们今晚愉快，Bon appétit !",
+     "language": "法式口音普通话"
+    },
+    "quoted": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     }
+    ],
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": true,
+      "targeted": true,
+      "relation": "这句话在回应或针对他/她"
+     },
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_hua"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（华叔）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "pout",
+      "probabilities": {
+       "idle": 0.0,
+       "listen": 0.0,
+       "pitch": 0.0,
+       "proud": 0.0,
+       "wink": 0.0,
+       "star": 0.0,
+       "sly": 0.0,
+       "eyeroll": 0.0,
+       "laugh": 0.0,
+       "shock": 0.0,
+       "sweat": 0.0,
+       "angry": 0.0,
+       "win": 0.0,
+       "pout": 0.9999,
+       "haughty": 0.0,
+       "think": 0.0,
+       "kiss": 0.0,
+       "smug": 0.0,
+       "nervous": 0.0,
+       "squeal": 0.0
+      },
+      "confidence": 1.0
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "pout",
+      "probabilities": {
+       "idle": 0.0,
+       "listen": 0.0,
+       "pitch": 0.0,
+       "proud": 0.0,
+       "wink": 0.0,
+       "star": 0.0,
+       "sly": 0.0,
+       "eyeroll": 0.0,
+       "laugh": 0.0,
+       "shock": 0.0,
+       "sweat": 0.0,
+       "angry": 0.0,
+       "win": 0.0,
+       "pout": 0.9999,
+       "haughty": 0.0,
+       "think": 0.0,
+       "kiss": 0.0,
+       "smug": 0.0,
+       "nervous": 0.0,
+       "squeal": 0.0,
+       "same": 0.0
+      },
+      "confidence": 1.0
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "bow",
+      "probabilities": {
+       "rest": 0.0049,
+       "hip": 0.0049,
+       "hip_one": 0.0049,
+       "hip_point": 0.0049,
+       "point": 0.0049,
+       "thumb": 0.0049,
+       "wave": 0.0049,
+       "wag": 0.0049,
+       "present": 0.0162,
+       "shrug": 0.3245,
+       "clasp": 0.0049,
+       "kiss": 0.0049,
+       "belly": 0.0049,
+       "belly_one": 0.0049,
+       "cheer": 0.0049,
+       "handsUp": 0.0049,
+       "bow": 0.5912
+      },
+      "confidence": 0.566
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "bow",
+      "probabilities": {
+       "none": 0.0173,
+       "hop": 0.0043,
+       "jump": 0.0043,
+       "shake": 0.0043,
+       "bounce": 0.0043,
+       "nod": 0.0043,
+       "lean": 0.0043,
+       "bow": 0.9443,
+       "puff": 0.0043,
+       "shiver": 0.0043,
+       "stepIn": 0.0043
+      },
+      "confidence": 0.939
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "quoted",
+      "probabilities": {
+       "quoted": 0.6461,
+       "other": 0.1593,
+       "audience": 0.1946
+      },
+      "confidence": 0.469
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "sad",
+      "probabilities": {
+       "neutral": 0.0006,
+       "excited": 0.0003,
+       "angry": 0.0002,
+       "mocking": 0.0002,
+       "flustered": 0.0002,
+       "sad": 0.9984
+      },
+      "confidence": 0.998
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "concede",
+      "probabilities": {
+       "pitch": 0.0002,
+       "rebut": 0.0002,
+       "mock": 0.0001,
+       "defend": 0.0001,
+       "agree": 0.0001,
+       "concede": 0.9994
+      },
+      "confidence": 0.999
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.35,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.2652,
+       "1": 0.2652,
+       "2": 0.324,
+       "3": 0.1456
+      },
+      "confidence": 0.059
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.0971,
+       "shock": 0.1186,
+       "sweat": 0.0533,
+       "angry": 0.0533,
+       "laugh": 0.0533,
+       "squeal": 0.0533,
+       "eyeroll": 0.1449,
+       "smug": 0.0533,
+       "sly": 0.0533,
+       "think": 0.0533,
+       "pout": 0.0533,
+       "nervous": 0.0533,
+       "haughty": 0.0533,
+       "star": 0.0533,
+       "idle": 0.0533
+      },
+      "confidence": 0.084
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "smug",
+      "probabilities": {
+       "listen": 0.0965,
+       "shock": 0.053,
+       "sweat": 0.053,
+       "angry": 0.053,
+       "laugh": 0.053,
+       "squeal": 0.053,
+       "eyeroll": 0.053,
+       "smug": 0.2148,
+       "sly": 0.053,
+       "think": 0.053,
+       "pout": 0.053,
+       "nervous": 0.053,
+       "haughty": 0.053,
+       "star": 0.053,
+       "idle": 0.053
+      },
+      "confidence": 0.159
+     }
+    }
+   }
+  },
+  {
+   "name": "引用无名氏",
+   "input": {
+    "speaker": "hua",
+    "text": "边个话我哋贵？其实只要一百二，不过周末要排队。",
+    "language": "粤语",
+    "quotes": [
+     {
+      "who": null,
+      "text": "听说华记粤点很贵"
+     }
+    ],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "华叔",
+     "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+     "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。"
+    },
+    "line": {
+     "text": "边个话我哋贵？其实只要一百二，不过周末要排队。",
+     "language": "粤语"
+    },
+    "quoted": [
+     {
+      "speaker": "某人",
+      "text": "听说华记粤点很贵"
+     }
+    ],
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "speaker": "华叔",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "nervous",
+      "probabilities": {
+       "idle": 0.0007,
+       "listen": 0.001,
+       "pitch": 0.003,
+       "proud": 0.0007,
+       "wink": 0.0007,
+       "star": 0.0007,
+       "sly": 0.0044,
+       "eyeroll": 0.0007,
+       "laugh": 0.0007,
+       "shock": 0.0007,
+       "sweat": 0.0007,
+       "angry": 0.0007,
+       "win": 0.0007,
+       "pout": 0.0007,
+       "haughty": 0.0007,
+       "think": 0.0007,
+       "kiss": 0.0007,
+       "smug": 0.0007,
+       "nervous": 0.9799,
+       "squeal": 0.0007
+      },
+      "confidence": 0.979
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "nervous",
+      "probabilities": {
+       "idle": 0.0007,
+       "listen": 0.001,
+       "pitch": 0.003,
+       "proud": 0.0007,
+       "wink": 0.0013,
+       "star": 0.0007,
+       "sly": 0.0044,
+       "eyeroll": 0.0007,
+       "laugh": 0.0007,
+       "shock": 0.0007,
+       "sweat": 0.0007,
+       "angry": 0.0007,
+       "win": 0.0007,
+       "pout": 0.0007,
+       "haughty": 0.0007,
+       "think": 0.0007,
+       "kiss": 0.0007,
+       "smug": 0.0007,
+       "nervous": 0.9774,
+       "squeal": 0.0007,
+       "same": 0.002
+      },
+      "confidence": 0.976
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "handsUp",
+      "probabilities": {
+       "rest": 0.0016,
+       "hip": 0.0016,
+       "hip_one": 0.0016,
+       "hip_point": 0.0036,
+       "point": 0.0016,
+       "thumb": 0.0039,
+       "wave": 0.0016,
+       "wag": 0.0053,
+       "present": 0.0016,
+       "shrug": 0.0016,
+       "clasp": 0.0016,
+       "kiss": 0.0016,
+       "belly": 0.0016,
+       "belly_one": 0.0016,
+       "cheer": 0.0016,
+       "handsUp": 0.9663,
+       "bow": 0.0016
+      },
+      "confidence": 0.964
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "shiver",
+      "probabilities": {
+       "none": 0.0079,
+       "hop": 0.0035,
+       "jump": 0.0035,
+       "shake": 0.0035,
+       "bounce": 0.0035,
+       "nod": 0.0035,
+       "lean": 0.0064,
+       "bow": 0.0035,
+       "puff": 0.0058,
+       "shiver": 0.9552,
+       "stepIn": 0.0035
+      },
+      "confidence": 0.951
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "quoted",
+      "probabilities": {
+       "quoted": 0.557,
+       "other": 0.1373,
+       "audience": 0.3057
+      },
+      "confidence": 0.335
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "flustered",
+      "probabilities": {
+       "neutral": 0.0066,
+       "excited": 0.004,
+       "angry": 0.0024,
+       "mocking": 0.0024,
+       "flustered": 0.9821,
+       "sad": 0.0024
+      },
+      "confidence": 0.978
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "defend",
+      "probabilities": {
+       "pitch": 0.0143,
+       "rebut": 0.0213,
+       "mock": 0.0064,
+       "defend": 0.9503,
+       "agree": 0.0043,
+       "concede": 0.0035
+      },
+      "confidence": 0.94
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "shaky",
+      "probabilities": {
+       "normal": 0.0025,
+       "shout": 0.0007,
+       "shaky": 0.9968
+      },
+      "confidence": 0.995
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.242,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.2879,
+       "1": 0.2879,
+       "2": 0.3182,
+       "3": 0.1059
+      },
+      "confidence": 0.03
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.102,
+       "shock": 0.056,
+       "sweat": 0.056,
+       "angry": 0.056,
+       "laugh": 0.056,
+       "squeal": 0.056,
+       "eyeroll": 0.1245,
+       "smug": 0.102,
+       "sly": 0.056,
+       "think": 0.056,
+       "pout": 0.056,
+       "nervous": 0.056,
+       "haughty": 0.056,
+       "star": 0.056,
+       "idle": 0.056
+      },
+      "confidence": 0.062
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "haughty",
+      "probabilities": {
+       "listen": 0.102,
+       "shock": 0.056,
+       "sweat": 0.056,
+       "angry": 0.056,
+       "laugh": 0.056,
+       "squeal": 0.056,
+       "eyeroll": 0.056,
+       "smug": 0.102,
+       "sly": 0.056,
+       "think": 0.056,
+       "pout": 0.056,
+       "nervous": 0.056,
+       "haughty": 0.1245,
+       "star": 0.056,
+       "idle": 0.056
+      },
+      "confidence": 0.062
+     }
+    }
+   }
+  },
+  {
+   "name": "生成的店主（无片子加成）",
+   "input": {
+    "speaker": "a7c3e1",
+    "text": "约会也可以来撸串嘛！浪漫又实惠，人均才76块，包你吃好！",
+    "language": "普通话",
+    "quotes": [
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     }
+    ],
+    "history": [
+     {
+      "who": "rong",
+      "text": "来我屋头嘛！正宗麻辣，人均才85块，包你巴适！"
+     },
+     {
+      "who": "hua",
+      "text": "辣到嘴肿仲点食啊？我哋老火汤煲足四个钟，日日新鲜。"
+     },
+     {
+      "who": "ghost",
+      "text": "我不在台上"
+     },
+     {
+      "who": "rong",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "who": "pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "who": "hua",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre",
+     "a7c3e1"
+    ]
+   },
+   "listeners": [
+    "rong",
+    "hua",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：4 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐、炭叔·烧烤 / 烤串）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "炭叔",
+     "restaurant": "街角炭火（烧烤 · ¥76/人 · 0.6 km）",
+     "persona": "街角烧烤摊老板，45 岁。豪爽、嗓门大，爱拍胸脯打包票；被说不卫生会立刻急眼。卖点：现烤现吃、人均 76、营业到凌晨两点。"
+    },
+    "line": {
+     "text": "约会也可以来撸串嘛！浪漫又实惠，人均才76块，包你吃好！",
+     "language": "普通话"
+    },
+    "quoted": [
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     }
+    ],
+    "listeners": [
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": true,
+      "targeted": true,
+      "relation": "这句话在回应或针对他/她"
+     }
+    ],
+    "recent_turns": [
+     {
+      "speaker": "蓉姐",
+      "text": "四个钟？等你的汤煲好，客人都饿到喊妈妈了！"
+     },
+     {
+      "speaker": "Pierre",
+      "text": "烛光，红酒，七道菜。这才叫晚餐。"
+     },
+     {
+      "speaker": "华叔",
+      "text": "七道菜？埋单八百八，好浪漫咩？"
+     }
+    ]
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_rong",
+    "listener_hua",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（华叔）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[2]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[2]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[2].relation` 和 `listeners[2].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0001,
+       "listen": 0.0001,
+       "pitch": 0.998,
+       "proud": 0.0009,
+       "wink": 0.0001,
+       "star": 0.0001,
+       "sly": 0.0001,
+       "eyeroll": 0.0001,
+       "laugh": 0.0001,
+       "shock": 0.0001,
+       "sweat": 0.0001,
+       "angry": 0.0001,
+       "win": 0.0001,
+       "pout": 0.0001,
+       "haughty": 0.0001,
+       "think": 0.0001,
+       "kiss": 0.0001,
+       "smug": 0.0001,
+       "nervous": 0.0001,
+       "squeal": 0.0001
+      },
+      "confidence": 0.998
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0001,
+       "listen": 0.0001,
+       "pitch": 0.9912,
+       "proud": 0.0009,
+       "wink": 0.0067,
+       "star": 0.0001,
+       "sly": 0.0001,
+       "eyeroll": 0.0001,
+       "laugh": 0.0001,
+       "shock": 0.0001,
+       "sweat": 0.0001,
+       "angry": 0.0001,
+       "win": 0.0001,
+       "pout": 0.0001,
+       "haughty": 0.0001,
+       "think": 0.0001,
+       "kiss": 0.0001,
+       "smug": 0.0001,
+       "nervous": 0.0001,
+       "squeal": 0.0001,
+       "same": 0.0001
+      },
+      "confidence": 0.991
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "thumb",
+      "probabilities": {
+       "rest": 0.0012,
+       "hip": 0.0012,
+       "hip_one": 0.0012,
+       "hip_point": 0.0012,
+       "point": 0.0012,
+       "thumb": 0.969,
+       "wave": 0.0012,
+       "wag": 0.0012,
+       "present": 0.0131,
+       "shrug": 0.0012,
+       "clasp": 0.0012,
+       "kiss": 0.0012,
+       "belly": 0.0012,
+       "belly_one": 0.0012,
+       "cheer": 0.0012,
+       "handsUp": 0.0012,
+       "bow": 0.0012
+      },
+      "confidence": 0.967
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "puff",
+      "probabilities": {
+       "none": 0.0816,
+       "hop": 0.0366,
+       "jump": 0.0366,
+       "shake": 0.0366,
+       "bounce": 0.0668,
+       "nod": 0.0366,
+       "lean": 0.0366,
+       "bow": 0.0366,
+       "puff": 0.4465,
+       "shiver": 0.0366,
+       "stepIn": 0.1486
+      },
+      "confidence": 0.391
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "audience",
+      "probabilities": {
+       "quoted": 0.0469,
+       "other": 0.0116,
+       "audience": 0.9416
+      },
+      "confidence": 0.912
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "excited",
+      "probabilities": {
+       "neutral": 0.0233,
+       "excited": 0.9424,
+       "angry": 0.0086,
+       "mocking": 0.0086,
+       "flustered": 0.0086,
+       "sad": 0.0086
+      },
+      "confidence": 0.931
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.7213,
+       "rebut": 0.0976,
+       "mock": 0.0654,
+       "defend": 0.0359,
+       "agree": 0.0439,
+       "concede": 0.0359
+      },
+      "confidence": 0.666
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.5713,
+       "shout": 0.2567,
+       "shaky": 0.1721
+      },
+      "confidence": 0.357
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.517,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.1806,
+       "1": 0.2695,
+       "2": 0.402,
+       "3": 0.1479
+      },
+      "confidence": 0.221
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.0759,
+       "shock": 0.0416,
+       "sweat": 0.0416,
+       "angry": 0.0416,
+       "laugh": 0.0416,
+       "squeal": 0.0416,
+       "eyeroll": 0.2519,
+       "smug": 0.0759,
+       "sly": 0.0416,
+       "think": 0.1383,
+       "pout": 0.0416,
+       "nervous": 0.0416,
+       "haughty": 0.0416,
+       "star": 0.0416,
+       "idle": 0.0416
+      },
+      "confidence": 0.198
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "smug",
+      "probabilities": {
+       "listen": 0.0795,
+       "shock": 0.0436,
+       "sweat": 0.0436,
+       "angry": 0.0436,
+       "laugh": 0.0436,
+       "squeal": 0.0436,
+       "eyeroll": 0.1186,
+       "smug": 0.177,
+       "sly": 0.0436,
+       "think": 0.1449,
+       "pout": 0.0436,
+       "nervous": 0.0436,
+       "haughty": 0.0436,
+       "star": 0.0436,
+       "idle": 0.0436
+      },
+      "confidence": 0.118
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "sweat",
+      "probabilities": {
+       "listen": 0.0614,
+       "shock": 0.075,
+       "sweat": 0.4105,
+       "angry": 0.0337,
+       "laugh": 0.0337,
+       "squeal": 0.0337,
+       "eyeroll": 0.0412,
+       "smug": 0.0337,
+       "sly": 0.0337,
+       "think": 0.0337,
+       "pout": 0.0337,
+       "nervous": 0.0337,
+       "haughty": 0.075,
+       "star": 0.0337,
+       "idle": 0.0337
+      },
+      "confidence": 0.368
+     }
+    }
+   }
+  },
+  {
+   "name": "生成的店主当听众",
+   "input": {
+    "speaker": "me",
+    "text": "炭叔家烤串几点关门？",
+    "language": "普通话",
+    "quotes": [],
+    "history": [],
+    "stage": [
+     "a7c3e1",
+     "rong",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "a7c3e1",
+    "rong",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（炭叔·烧烤 / 烤串、蓉姐·川菜、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "我（台下顾客）",
+     "restaurant": "—",
+     "persona": "台下的顾客（用户本人），正在纠结今晚吃什么：会提问、提要求、吐槽，也会一次回应好几家店。"
+    },
+    "line": {
+     "text": "炭叔家烤串几点关门？",
+     "language": "普通话"
+    },
+    "quoted": null,
+    "listeners": [
+     {
+      "name": "炭叔",
+      "restaurant": "街角炭火（烧烤 · ¥76/人 · 0.6 km）",
+      "persona": "街角烧烤摊老板，45 岁。豪爽、嗓门大，爱拍胸脯打包票；被说不卫生会立刻急眼。卖点：现烤现吃、人均 76、营业到凌晨两点。",
+      "is_quoted": false,
+      "targeted": true,
+      "relation": "顾客点名问到了他/她的店"
+     },
+     {
+      "name": "蓉姐",
+      "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+      "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "顾客在说话，他/她在旁边听"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "顾客在说话，他/她在旁边听"
+     }
+    ],
+    "recent_turns": []
+   },
+   "questionKeys": [
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_a7c3e1",
+    "listener_rong",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_a7c3e1": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（炭叔）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_rong": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（蓉姐）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[2]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[2]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[2].relation` 和 `listeners[2].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "delivery": {
+      "type": "choice",
+      "choice": "neutral",
+      "probabilities": {
+       "neutral": 0.3522,
+       "excited": 0.1296,
+       "angry": 0.1296,
+       "mocking": 0.1296,
+       "flustered": 0.1296,
+       "sad": 0.1296
+      },
+      "confidence": 0.223
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.7,
+       "rebut": 0.0575,
+       "mock": 0.0575,
+       "defend": 0.0575,
+       "agree": 0.0702,
+       "concede": 0.0575
+      },
+      "confidence": 0.64
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "normal",
+      "probabilities": {
+       "normal": 0.6241,
+       "shout": 0.188,
+       "shaky": 0.188
+      },
+      "confidence": 0.436
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.242,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.2879,
+       "1": 0.2879,
+       "2": 0.3182,
+       "3": 0.1059
+      },
+      "confidence": 0.03
+     },
+     "listener_a7c3e1": {
+      "type": "choice",
+      "choice": "star",
+      "probabilities": {
+       "listen": 0.0871,
+       "shock": 0.0478,
+       "sweat": 0.0478,
+       "angry": 0.0478,
+       "laugh": 0.1064,
+       "squeal": 0.0478,
+       "eyeroll": 0.0478,
+       "smug": 0.0478,
+       "sly": 0.0478,
+       "think": 0.0871,
+       "pout": 0.0478,
+       "nervous": 0.0478,
+       "haughty": 0.0478,
+       "star": 0.1938,
+       "idle": 0.0478
+      },
+      "confidence": 0.136
+     },
+     "listener_rong": {
+      "type": "choice",
+      "choice": "eyeroll",
+      "probabilities": {
+       "listen": 0.0984,
+       "shock": 0.054,
+       "sweat": 0.054,
+       "angry": 0.054,
+       "laugh": 0.054,
+       "squeal": 0.054,
+       "eyeroll": 0.1202,
+       "smug": 0.054,
+       "sly": 0.054,
+       "think": 0.0984,
+       "pout": 0.054,
+       "nervous": 0.054,
+       "haughty": 0.054,
+       "star": 0.089,
+       "idle": 0.054
+      },
+      "confidence": 0.057
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "haughty",
+      "probabilities": {
+       "listen": 0.0984,
+       "shock": 0.054,
+       "sweat": 0.054,
+       "angry": 0.054,
+       "laugh": 0.054,
+       "squeal": 0.054,
+       "eyeroll": 0.054,
+       "smug": 0.054,
+       "sly": 0.054,
+       "think": 0.0984,
+       "pout": 0.054,
+       "nervous": 0.054,
+       "haughty": 0.1202,
+       "star": 0.089,
+       "idle": 0.054
+      },
+      "confidence": 0.057
+     }
+    }
+   }
+  },
+  {
+   "name": "全角数字",
+   "input": {
+    "speaker": "rong",
+    "text": "人均只要８５，还送凉粉！",
+    "language": "四川话",
+    "quotes": [],
+    "history": [],
+    "stage": [
+     "rong",
+     "hua",
+     "pierre"
+    ]
+   },
+   "listeners": [
+    "hua",
+    "pierre"
+   ],
+   "state": {
+    "scene": "美食路演直播：3 家餐馆的主理人（蓉姐·川菜、华叔·粤菜 / 早茶、Pierre·法餐）同台轮流推销、互相拆台；台下的顾客（「我」）边吃瓜边选今晚去哪吃，会直接提问、提要求，也会一次回应好几家。主持智能体「小选」负责收集需求和总结。",
+    "style": "夸张外放的喜剧表演：每个反应都要一眼可读。被点名、被揭短的人立刻有强烈反应；旁观者看热闹会笑、会幸灾乐祸；听到对手吹牛会翻白眼；顾客提问时被问到的店主会两眼放光、抢着表现；平淡的倾听只在这句话和自己无关时使用。",
+    "speaker": {
+     "name": "蓉姐",
+     "restaurant": "巴适川菜（川菜 · ¥85/人 · 1.2 km）",
+     "persona": "四川餐馆老板娘，35—40 岁。热情、泼辣、直接，有感染力；推介时掌心打开、身体前倾，被质疑时先侧目挑眉再短促回击。卖点：正宗麻辣、人均 85、露台包间与鸳鸯锅。"
+    },
+    "line": {
+     "text": "人均只要８５，还送凉粉！",
+     "language": "四川话"
+    },
+    "quoted": null,
+    "listeners": [
+     {
+      "name": "华叔",
+      "restaurant": "华记粤点（粤菜 · ¥128/人 · 0.8 km）",
+      "persona": "粤菜馆老板，40—50 岁。慢条斯理、温和而笃定，爱用事实和反问挖苦对手；受挑战时先停顿抬眉再平静回应。卖点：早茶点心日日新鲜、老火汤煲足四个钟、离得最近。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     },
+     {
+      "name": "Pierre",
+      "restaurant": "Chez Pierre（法餐 · ¥198/人 · 2.1 km）",
+      "persona": "年轻法式主厨。精确、克制、偶尔戏剧化，自诩浪漫与艺术；被指出贵时短暂心虚找补，被冒犯时会炸毛。卖点：烛光、红酒、七道菜，工作日套餐 198。",
+      "is_quoted": false,
+      "targeted": false,
+      "relation": "旁观者"
+     }
+    ],
+    "recent_turns": []
+   },
+   "questionKeys": [
+    "speaker_expr",
+    "speaker_punch",
+    "speaker_gesture",
+    "speaker_act",
+    "speaker_gaze",
+    "intensity",
+    "delivery",
+    "stance",
+    "bubble",
+    "listener_hua",
+    "listener_pierre"
+   ],
+   "listenerQuestions": {
+    "listener_hua": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[0]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[0]`（华叔）脸上会立刻露出什么反应？先看 `listeners[0].relation` 和 `listeners[0].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    },
+    "listener_pierre": {
+     "type": "choice",
+     "instructions": {
+      "listener": "`listeners[1]`",
+      "question": "按照 `style`，`speaker.name` 说出 `line.text` 时，台上的 `listeners[1]`（Pierre）脸上会立刻露出什么反应？先看 `listeners[1].relation` 和 `listeners[1].targeted`：被针对的人会震惊、心虚、生气或嘟嘴；旁观者看热闹会大笑、得意笑或翻白眼。"
+     },
+     "criteria": {
+      "listen": "倾听：这句话跟自己基本无关、只是平铺直叙时的认真倾听（尽量少用）。",
+      "shock": "震惊：被直接点名、揭短或听到意外消息的一瞬间：眉猛抬、O 形嘴、头顶感叹号。被针对的人最常见的第一反应。",
+      "sweat": "心虚流汗：自家短处被说中、被问住，心虚流汗，底气不足。",
+      "angry": "生气：被冒犯、被嘲讽到忍不住要回嘴，气鼓鼓、冒烟。",
+      "laugh": "大笑：旁观别人出丑、听到好笑的挖苦，忍不住大笑捧腹。",
+      "squeal": "笑到挤眼：笑点特别强（例如夸张的比喻），笑到挤眼、停不下来。",
+      "eyeroll": "翻白眼：对手在自吹自擂、说大话时的不屑：翻白眼。",
+      "smug": "得意笑：看到对手吃瘪、自己顺势占上风时的幸灾乐祸。",
+      "sly": "坏笑：憋着坏主意、马上要接话反击时的坏笑（少用）。",
+      "think": "思考：听到新的信息或洞察（例如主持人分析用户需求），需要想一想。",
+      "pout": "落选嘟嘴：自己被比下去、被抢先、明显输了时的委屈嘟嘴。",
+      "nervous": "紧张赔笑：被追问、被逼到墙角时的紧张赔笑。",
+      "haughty": "高傲：自视甚高、不屑参与这种争论（法式主厨常见）。",
+      "star": "星星眼：听到对自己特别有利的消息，眼睛发光。",
+      "idle": "待机：完全没在听（几乎不用）。"
+     }
+    }
+   },
+   "baseline": {
+    "model": "baseline-keywords",
+    "answers": {
+     "speaker_expr": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0041,
+       "listen": 0.0055,
+       "pitch": 0.9007,
+       "proud": 0.0041,
+       "wink": 0.0041,
+       "star": 0.0041,
+       "sly": 0.0041,
+       "eyeroll": 0.0041,
+       "laugh": 0.0041,
+       "shock": 0.0041,
+       "sweat": 0.0041,
+       "angry": 0.0041,
+       "win": 0.0041,
+       "pout": 0.0041,
+       "haughty": 0.0041,
+       "think": 0.0041,
+       "kiss": 0.0041,
+       "smug": 0.0041,
+       "nervous": 0.0246,
+       "squeal": 0.0041
+      },
+      "confidence": 0.896
+     },
+     "speaker_punch": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "idle": 0.0039,
+       "listen": 0.0053,
+       "pitch": 0.8731,
+       "proud": 0.0039,
+       "wink": 0.0239,
+       "star": 0.0039,
+       "sly": 0.0039,
+       "eyeroll": 0.0039,
+       "laugh": 0.0039,
+       "shock": 0.0039,
+       "sweat": 0.0039,
+       "angry": 0.0039,
+       "win": 0.0039,
+       "pout": 0.0039,
+       "haughty": 0.0039,
+       "think": 0.0039,
+       "kiss": 0.0039,
+       "smug": 0.0039,
+       "nervous": 0.0239,
+       "squeal": 0.0039,
+       "same": 0.0107
+      },
+      "confidence": 0.867
+     },
+     "speaker_gesture": {
+      "type": "choice",
+      "choice": "thumb",
+      "probabilities": {
+       "rest": 0.0269,
+       "hip": 0.0269,
+       "hip_one": 0.0894,
+       "hip_point": 0.0269,
+       "point": 0.0269,
+       "thumb": 0.4005,
+       "wave": 0.0269,
+       "wag": 0.0269,
+       "present": 0.0269,
+       "shrug": 0.0269,
+       "clasp": 0.0269,
+       "kiss": 0.0269,
+       "belly": 0.0269,
+       "belly_one": 0.0269,
+       "cheer": 0.0269,
+       "handsUp": 0.1333,
+       "bow": 0.0269
+      },
+      "confidence": 0.363
+     },
+     "speaker_act": {
+      "type": "choice",
+      "choice": "puff",
+      "probabilities": {
+       "none": 0.1136,
+       "hop": 0.0511,
+       "jump": 0.0511,
+       "shake": 0.0511,
+       "bounce": 0.0511,
+       "nod": 0.0511,
+       "lean": 0.0511,
+       "bow": 0.0511,
+       "puff": 0.2288,
+       "shiver": 0.2071,
+       "stepIn": 0.093
+      },
+      "confidence": 0.152
+     },
+     "speaker_gaze": {
+      "type": "choice",
+      "choice": "audience",
+      "probabilities": {
+       "quoted": 0.0889,
+       "other": 0.1086,
+       "audience": 0.8025
+      },
+      "confidence": 0.704
+     },
+     "delivery": {
+      "type": "choice",
+      "choice": "excited",
+      "probabilities": {
+       "neutral": 0.161,
+       "excited": 0.3959,
+       "angry": 0.0592,
+       "mocking": 0.0592,
+       "flustered": 0.2654,
+       "sad": 0.0592
+      },
+      "confidence": 0.275
+     },
+     "stance": {
+      "type": "choice",
+      "choice": "pitch",
+      "probabilities": {
+       "pitch": 0.8301,
+       "rebut": 0.0205,
+       "mock": 0.0205,
+       "defend": 0.0832,
+       "agree": 0.0251,
+       "concede": 0.0205
+      },
+      "confidence": 0.796
+     },
+     "bubble": {
+      "type": "choice",
+      "choice": "shaky",
+      "probabilities": {
+       "normal": 0.3202,
+       "shout": 0.0964,
+       "shaky": 0.5834
+      },
+      "confidence": 0.375
+     },
+     "intensity": {
+      "type": "score",
+      "score": 1.35,
+      "legend": {
+       "0": "平静：语气平淡，几乎没有情绪起伏",
+       "1": "温和：有一点情绪，轻松自然",
+       "2": "鲜明：情绪明显，带感叹或反问",
+       "3": "爆发：非常激动，大喊、炸毛或狂喜"
+      },
+      "probabilities": {
+       "0": 0.2652,
+       "1": 0.2652,
+       "2": 0.324,
+       "3": 0.1456
+      },
+      "confidence": 0.059
+     },
+     "listener_hua": {
+      "type": "choice",
+      "choice": "smug",
+      "probabilities": {
+       "listen": 0.1069,
+       "shock": 0.0587,
+       "sweat": 0.0587,
+       "angry": 0.0587,
+       "laugh": 0.0587,
+       "squeal": 0.0587,
+       "eyeroll": 0.0587,
+       "smug": 0.1305,
+       "sly": 0.0587,
+       "think": 0.0587,
+       "pout": 0.0587,
+       "nervous": 0.0587,
+       "haughty": 0.0587,
+       "star": 0.0587,
+       "idle": 0.0587
+      },
+      "confidence": 0.068
+     },
+     "listener_pierre": {
+      "type": "choice",
+      "choice": "haughty",
+      "probabilities": {
+       "listen": 0.1069,
+       "shock": 0.0587,
+       "sweat": 0.0587,
+       "angry": 0.0587,
+       "laugh": 0.0587,
+       "squeal": 0.0587,
+       "eyeroll": 0.0587,
+       "smug": 0.0587,
+       "sly": 0.0587,
+       "think": 0.0587,
+       "pout": 0.0587,
+       "nervous": 0.0587,
+       "haughty": 0.1305,
+       "star": 0.0587,
+       "idle": 0.0587
+      },
+      "confidence": 0.068
+     }
+    }
+   }
+  }
+ ]
+}

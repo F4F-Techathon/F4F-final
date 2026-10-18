@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "type": "xlsx",
+    "file": "sample_丁香小鲜.xlsx",
+    "note": "丁香小鲜来自源工作簿；另外两家为明确标注的演示数据。"
+  },
+  "restaurants": [
+    {
+      "id": "dxx-ningbo",
+      "shopUuid": "Ha8m96AB89diU0LL",
+      "agentId": "hua",
+      "assetId": "hua",
+      "name": "丁香小鲜·海派宁波菜",
+      "shortName": "丁香小鲜",
+      "cuisine": "宁波菜／浙菜／海鲜",
+      "district": "浦东新区·张江商圈",
+      "address": "中科路800号新启汇C4号楼1楼（中科路13号线3号口地铁100m）",
+      "avgPrice": 131,
+      "rating": 4.6,
+      "hours": "周一至周日\n11:00-14:00\n16:30-22:00",
+      "recommendedDishes": [
+        "台州家烧黄鱼",
+        "酸萝卜炒吊龙",
+        "宁波十八斩",
+        "家烧杂鱼",
+        "梭子蟹炒年糕",
+        "橙香脆皮牛肉",
+        "香肠拼温州鱼饼",
+        "酸汤双肚"
+      ],
+      "highlights": [
+        "活鲜现做",
+        "包间选择多",
+        "适合聚餐和商务宴请"
+      ],
+      "cautions": [
+        "以海鲜菜为主",
+        "评论对口味浓淡评价不一",
+        "少数评论提到服务和出餐问题"
+      ],
+      "isDemo": false,
+      "evidence": [
+        {
+          "id": "ev_8b2e6f0fd66a",
+          "restaurantId": "dxx-ningbo",
+          "sourceSheet": "最新评论",
+          "sourceRow": 4,
+          "sourceText": "玉脂金膏十八斩味道不错，蟹很肥，鲜嫩爽口，还有就是罗氏虾，腌的很好吃。\n包房干净卫生，服务员小姚很专业，及时照顾客人感受，值得点赞👍",
+          "quote": "包房干净卫生，服务员小姚很专业，及时照顾客人感受，值得点赞👍",
+          "highlightStart": 36,
+          "highlightEnd": 66,
+          "sentiment": "positive",
+          "tags": [
+            "口味",
+            "环境",
+            "服务"
+          ],
+          "isDemo": false
+        },
+        {
+          "id": "ev_f106a727364e",
+          "restaurantId": "dxx-ningbo",
+          "sourceSheet": "最新评论",
+          "sourceRow": 6,
+          "sourceText": "就在单位附近经常来吃，中午生意很好基本都客满，菜的口味是宁波小海鲜，基本没有踩雷的菜，「酥不腻烤鸭」有山楂条的烤鸭是好烤鸭「家烧杂鱼」鱼很鲜，肉质很嫩，可以单独点年糕放进去，也可以很入味，「爆炒双菇小母鸡」这个菌菇好吃鸡肉也好吃量还很大 整体菜量很足 环境也好 停车方便 服务员热情主动",
+          "quote": "就在单位附近经常来吃，中午生意很好基本都客满，菜的口味是宁波小海鲜，基本没有踩雷的菜，「酥不腻烤鸭」有山楂条的烤鸭是好烤鸭「家烧杂鱼」鱼",
+          "highlightStart": 0,
+          "highlightEnd": 68,
+          "sentiment": "positive",
+          "tags": [
+            "口味",
+            "环境",
+            "服务"
+          ],
+          "isDemo": false
+        },
+        {
+          "id": "ev_9261bd6007c9",
+          "restaurantId": "dxx-ningbo",
+          "sourceSheet": "最新评论",
+          "sourceRow": 7,
+          "sourceText": "张江这家海派宁波菜第一次来！点了套餐，分量足够套餐人数的 [薄荷]环境：店内空间宽敞，还有独立包间，商务小聚都很合适。 [米饭]口味：整个套餐最大的感觉就是调味克制不重口。喜欢清淡的话就很推荐，上菜速度稳定，服务响应及时。 [糖果]性价比：从环境和摆盘上来说比较精致，价格就会有一点点小贵。张江打工人团建、朋友小聚的优选海鲜菜馆。",
+          "quote": "点了套餐，分量足够套餐人数的 环境：店内空间宽敞，还有独立包间，商务小聚都很合适",
+          "highlightStart": 0,
+          "highlightEnd": 40,
+          "sentiment": "positive",
+          "tags": [
+            "口味",
+            "环境",
+            "服务"
+          ],
+          "isDemo": false
+        },
+        {
+          "id": "ev_f59e179ec63b",
+          "restaurantId": "dxx-ningbo",
+          "sourceSheet": "最新评论",
+          "sourceRow": 8,
+          "sourceText": "以前经常去丁香餐厅，这边的丁香小鲜是升级版，环境很好，一点都不拥挤，并且有很多包房，无论朋友聚餐还是商务宴请都合适。菜品的水准仍然让人放心，服务也是非常周到，上菜速度恰恰好好，总体来说是一家非常值得推荐的餐厅！",
+          "quote": "以前经常去丁香餐厅，这边的丁香小鲜是升级版，环境很好，一点都不拥挤，并且有很多包房，无论朋友聚餐还是商务宴请都合适",
+          "highlightStart": 0,
+          "highlightEnd": 57,
+          "sentiment": "positive",
+          "tags": [
+            "口味",
+            "环境",
+            "服务"
+          ],
+          "isDemo": false
+        },
+        {
+          "id": "ev_312340ffd502",
+          "restaurantId": "dxx-ningbo",
+          "sourceSheet": "差评",
+          "sourceRow": 2,
+          "sourceText": "一个月前来吃的不知道为什么评价被退回了，刚刚看了眼不知道怎么刷了那么多好评，说下详细用餐体验把，过来点了梭子蟹蟹肉很空，点餐的时候说肯定肥，带了干白去喝，进包厢有没有冰桶冰酒，服务员拿了一桶冰进来，感觉很不专业，菜味道一般，后面加了「海肠捞饭」，基本上没什么海肠，然后用餐到一半时，传来一股杀虫剂之类的味道，后面问是在喷除甲醛的东西也不知道是什么东西，最后买单免了一只梭子蟹的钱，一共买了十只。服务基本为0，想喝水只有滚烫热水。",
+          "quote": "一个月前来吃的不知道为什么评价被退回了，刚刚看了眼不知道怎么刷了那么多好评，说下详细用餐体验把，过来点了梭子蟹蟹肉很空，点餐的时候说肯定",
+          "highlightStart": 0,
+          "highlightEnd": 68,
+          "sentiment": "negative",
+          "tags": [
+            "服务",
+            "出餐",
+            "菜品"
+          ],
+          "isDemo": false
+        },
+        {
+          "id": "ev_d66f0d36a2b6",
+          "restaurantId": "dxx-ningbo",
+          "sourceSheet": "差评",
+          "sourceRow": 3,
+          "sourceText": "菜品一般，口味先不说。899套餐，上来就说好几个菜没有，都要换，没有你卖个鸡毛？人也不多，上菜特别慢，40分钟上3个冷菜。再也不会去了",
+          "quote": "菜品一般，口味先不说",
+          "highlightStart": 0,
+          "highlightEnd": 10,
+          "sentiment": "negative",
+          "tags": [
+            "服务",
+            "出餐",
+            "菜品"
+          ],
+          "isDemo": false
+        },
+        {
+          "id": "ev_b9ebb8dbd72a",
+          "restaurantId": "dxx-ningbo",
+          "sourceSheet": "差评",
+          "sourceRow": 4,
+          "sourceText": "服务员服务态度太差，菜品很一般，没一个菜是好吃的，吃饭的时候居然喷雷达，全是刺鼻气味。再也不会来了。",
+          "quote": "服务员服务态度太差，菜品很一般，没一个菜是好吃的，吃饭的时候居然喷雷达，全是刺鼻气味",
+          "highlightStart": 0,
+          "highlightEnd": 42,
+          "sentiment": "negative",
+          "tags": [
+            "服务",
+            "出餐",
+            "菜品"
+          ],
+          "isDemo": false
+        },
+        {
+          "id": "ev_8967f0610700",
+          "restaurantId": "dxx-ningbo",
+          "sourceSheet": "差评",
+          "sourceRow": 5,
+          "sourceText": "量小，味道很一般，「海肠捞饭」基本没有海肠(具体可见图片一)，跟服务员和领班反映了两次都搪塞过去了，服务员说用量是正常的，领班说去跟厨房师傅说一下，极度敷衍。\n本来是我选的餐厅，我后悔了，不建议来吃饭！！！",
+          "quote": "量小，味道很一般，「海肠捞饭」基本没有海肠(具体可见图片一)，跟服务员和领班反映了两次都搪塞过去了，服务员说用量是正常的，领班说去跟厨房",
+          "highlightStart": 0,
+          "highlightEnd": 68,
+          "sentiment": "negative",
+          "tags": [
+            "服务",
+            "出餐",
+            "菜品"
+          ],
+          "isDemo": false
+        }
+      ]
+    },
+    {
+      "id": "rong-hotpot",
+      "shopUuid": "DEMO-RONG-001",
+      "agentId": "rong",
+      "assetId": "rong",
+      "name": "蓉姐·巷子川味",
+      "shortName": "蓉姐川味",
+      "cuisine": "川菜／小火锅",
+      "district": "浦东新区·张江",
+      "address": "演示数据：张江路88号",
+      "avgPrice": 86,
+      "rating": 4.5,
+      "hours": "演示数据：11:00-22:30",
+      "recommendedDishes": [
+        "藤椒牛肉",
+        "双椒鱼片",
+        "不辣番茄小锅"
+      ],
+      "highlights": [
+        "价格友好",
+        "可调辣度",
+        "适合朋友聚餐"
+      ],
+      "cautions": [
+        "部分蘸料含花生和坚果",
+        "高峰期可能排队"
+      ],
+      "isDemo": true,
+      "evidence": [
+        {
+          "id": "ev_35c130ba4768",
+          "restaurantId": "rong-hotpot",
+          "sourceSheet": "模拟评论",
+          "sourceRow": 2,
+          "sourceText": "演示评论：藤椒牛肉香而不燥，辣度可以调整，三个人点小份也够吃。",
+          "quote": "演示评论：藤椒牛肉香而不燥，辣度可以调整，三个人点小份也够吃",
+          "highlightStart": 0,
+          "highlightEnd": 30,
+          "sentiment": "positive",
+          "tags": [
+            "口味",
+            "分量"
+          ],
+          "isDemo": true
+        },
+        {
+          "id": "ev_7f4be7855f73",
+          "restaurantId": "rong-hotpot",
+          "sourceSheet": "模拟评论",
+          "sourceRow": 3,
+          "sourceText": "演示评论：周五晚上等位二十多分钟，蘸料台有花生碎，过敏的人要提前说明。",
+          "quote": "演示评论：周五晚上等位二十多分钟，蘸料台有花生碎，过敏的人要提前说明",
+          "highlightStart": 0,
+          "highlightEnd": 34,
+          "sentiment": "negative",
+          "tags": [
+            "排队",
+            "过敏"
+          ],
+          "isDemo": true
+        }
+      ]
+    },
+    {
+      "id": "pierre-bistro",
+      "shopUuid": "DEMO-PIERRE-001",
+      "agentId": "pierre",
+      "assetId": "pierre",
+      "name": "Pierre 的晚餐小馆",
+      "shortName": "Pierre小馆",
+      "cuisine": "法餐／西餐",
+      "district": "浦东新区·张江",
+      "address": "演示数据：科苑路18号",
+      "avgPrice": 198,
+      "rating": 4.7,
+      "hours": "演示数据：17:00-23:00",
+      "recommendedDishes": [
+        "香草烤鸡",
+        "红酒炖牛肉",
+        "无酒精莓果气泡饮"
+      ],
+      "highlights": [
+        "环境安静",
+        "适合约会",
+        "可做无酒精搭配"
+      ],
+      "cautions": [
+        "部分酱汁含乳制品",
+        "预算相对较高"
+      ],
+      "isDemo": true,
+      "evidence": [
+        {
+          "id": "ev_9b7ec23504c0",
+          "restaurantId": "pierre-bistro",
+          "sourceSheet": "模拟评论",
+          "sourceRow": 2,
+          "sourceText": "演示评论：灯光安静，座位距离舒服，香草烤鸡火候很好，适合两个人慢慢吃。",
+          "quote": "演示评论：灯光安静，座位距离舒服，香草烤鸡火候很好，适合两个人慢慢吃",
+          "highlightStart": 0,
+          "highlightEnd": 34,
+          "sentiment": "positive",
+          "tags": [
+            "环境",
+            "口味"
+          ],
+          "isDemo": true
+        },
+        {
+          "id": "ev_483870bff190",
+          "restaurantId": "pierre-bistro",
+          "sourceSheet": "模拟评论",
+          "sourceRow": 3,
+          "sourceText": "演示评论：套餐价格偏高，奶油酱汁比较多，对乳制品过敏需要提前沟通。",
+          "quote": "演示评论：套餐价格偏高，奶油酱汁比较多，对乳制品过敏需要提前沟通",
+          "highlightStart": 0,
+          "highlightEnd": 32,
+          "sentiment": "negative",
+          "tags": [
+            "价格",
+            "过敏"
+          ],
+          "isDemo": true
+        }
+      ]
+    }
+  ]
+}

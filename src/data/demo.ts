@@ -1,0 +1,31 @@
+// The nine hand-written demo shops the app started with (VITE_DATASET=demo), kept for unit tests and the
+// generator's golden fixtures, which were built from them.
+import type { Evidence, Restaurant } from './types'
+import bashiCover from '@/assets/images/restaurants/bashi.webp'
+import huajiCover from '@/assets/images/restaurants/huaji.webp'
+import pierreCover from '@/assets/images/restaurants/pierre.webp'
+import noodleCover from '@/assets/images/restaurants/noodle.webp'
+import jiangnanCover from '@/assets/images/restaurants/jiangnan.webp'
+import hotpotCover from '@/assets/images/restaurants/hotpot.webp'
+import coffeeCover from '@/assets/images/restaurants/coffee.webp'
+import sushiCover from '@/assets/images/restaurants/sushi.webp'
+import bbqCover from '@/assets/images/restaurants/bbq.webp'
+
+// Merchants and reviews are fictional; cover photos illustrate cuisines rather than actual venues.
+export const demoRestaurants: Restaurant[] = [
+  { id: 'bashi', cover: { src: bashiCover, alt: '香辣川味菜肴示意图', position: '50% 50%' }, name: '巴适川菜', cuisine: '川菜', host: '蓉姐', color: '#C9483E', price: 85, coordinates: [121.4395, 31.2246], address: '上海市静安区愚园路街区 · 演示位置', hours: '11:00–22:00', tags: ['露台小院', '可以少辣', '烟火气'], scenes: ['朋友聚餐', '约会'], quiet: false, spice: 2, allergens: ['花生'], specialty: '招牌回锅肉 · 鸳鸯锅', intro: '热热闹闹的川味小馆，露台吹着晚风，吃一口就是巴适。', caveat: '偏热闹；少辣做法与露台座位需要向商家确认。', evidenceIds: ['bashi-info', 'bashi-review', 'bashi-note'] },
+  { id: 'huaji', cover: { src: huajiCover, alt: '竹蒸笼里的虾饺与粤式点心示意图', position: '50% 52%' }, name: '华记粤点', cuisine: '粤菜', host: '华叔', color: '#2F6E62', price: 128, coordinates: [121.4489, 31.2284], address: '上海市静安区常德路街区 · 演示位置', hours: '10:00–21:30', tags: ['手工点心', '清淡鲜味', '坐下来慢聊'], scenes: ['家庭聚会', '朋友聚餐', '约会'], quiet: true, spice: 0, allergens: ['虾', '花生'], specialty: '虾饺皇 · 老火例汤', intro: '一盅两件，慢慢食。热汤与点心，照顾每一个不想将就的胃。', caveat: '点心含虾等常见过敏原，特殊饮食需求需提前确认。', evidenceIds: ['huaji-info', 'huaji-review', 'huaji-note'] },
+  { id: 'pierre', cover: { src: pierreCover, alt: '香煎牛排与配菜示意图', position: '50% 52%' }, name: 'Chez Pierre', cuisine: '西餐', host: 'Pierre', color: '#7A5A9E', price: 198, coordinates: [121.4533, 31.2193], address: '上海市静安区巨鹿路街区 · 演示位置', hours: '17:00–23:00', tags: ['烛光晚餐', '工作日套餐', '仪式感'], scenes: ['约会', '商务用餐'], quiet: true, spice: 0, allergens: ['乳制品', '小麦'], specialty: '香煎牛排 · 法式洋葱汤', intro: '把普通的夜晚过成纪念日。烛光、鲜花，还有刚刚好的浪漫。', caveat: '¥198 为演示的工作日套餐价格，其他时段价格未知。', evidenceIds: ['pierre-info', 'pierre-review', 'pierre-note'] },
+  { id: 'noodle', cover: { src: noodleCover, alt: '热汤面与配菜示意图', position: '50% 52%' }, name: '一碗山野', cuisine: '面馆', host: '山叔', color: '#78895E', price: 48, coordinates: [121.442, 31.2168], address: '上海市静安区延平路街区 · 演示位置', hours: '11:00–20:30', tags: ['一人食', '现熬汤底', '小而温暖'], scenes: ['一个人吃', '朋友聚餐'], quiet: null, spice: 0, allergens: ['小麦'], specialty: '菌菇鸡汤面', intro: '一碗热汤，一把好面。把今天的疲惫留在门外。', caveat: '座位有限；安静程度暂无可引用信息。', evidenceIds: ['noodle-info', 'noodle-review', 'noodle-note'] },
+  { id: 'jiangnan', cover: { src: jiangnanCover, alt: '红烧肉与家常菜示意图', position: '50% 50%' }, name: '小满·江南食堂', cuisine: '本帮菜', host: '小满', color: '#B37A54', price: 96, coordinates: [121.4547, 31.2335], address: '上海市静安区新闸路街区 · 演示位置', hours: '11:00–21:00', tags: ['时令家常菜', '甜咸适口', '邻里食堂'], scenes: ['家庭聚会', '朋友聚餐'], quiet: true, spice: 0, allergens: null, specialty: '红烧肉 · 清炒时蔬', intro: '家常菜也可以做得认真，四季的新鲜都在这一桌。', caveat: '过敏原资料不完整，不能据此判断饮食安全。', evidenceIds: ['jiangnan-info', 'jiangnan-review', 'jiangnan-note'] },
+  { id: 'hotpot', cover: { src: hotpotCover, alt: '火锅与新鲜食材示意图', position: '50% 46%' }, name: '围炉小院', cuisine: '火锅', host: '阿炉', color: '#BA5D47', price: 158, coordinates: [121.4295, 31.2345], address: '上海市静安区武定路街区 · 演示位置', hours: '11:30–23:30', tags: ['朋友聚会', '双拼锅底', '热气腾腾'], scenes: ['朋友聚餐', '家庭聚会'], quiet: false, spice: 2, allergens: null, specialty: '番茄双拼锅', intro: '没有什么比围坐在一起，更适合分享今天的故事。', caveat: '用餐环境较热闹，过敏原信息尚不完整。', evidenceIds: ['hotpot-info', 'hotpot-review', 'hotpot-note'] },
+  { id: 'coffee', cover: { src: coffeeCover, alt: '咖啡与桌面用餐场景示意图', position: '50% 50%' }, name: '日落之前', cuisine: '咖啡简餐', host: '阿落', color: '#9B7B9E', price: 72, coordinates: [121.4346, 31.2119], address: '上海市静安区安福路街区 · 演示位置', hours: '09:00–21:00', tags: ['窗边座位', '轻食', '安静聊天'], scenes: ['约会', '一个人吃'], quiet: true, spice: 0, allergens: ['乳制品', '小麦'], specialty: '烤鸡沙拉 · 手作咖啡', intro: '在日落之前，给自己一点留白。吃得轻一点，聊得久一点。', caveat: '晚餐选择较少，营业时间以商家实际信息为准。', evidenceIds: ['coffee-info', 'coffee-review', 'coffee-note'] },
+  { id: 'sushi', cover: { src: sushiCover, alt: '精致寿司拼盘示意图', position: '50% 50%' }, name: '鮨与四季', cuisine: '日料', host: '四季', color: '#668B91', price: 238, coordinates: [121.461, 31.2257], address: '上海市静安区陕西北路街区 · 演示位置', hours: null, tags: ['板前料理', '精致小店', '季节食材'], scenes: ['约会', '商务用餐'], quiet: true, spice: 0, allergens: ['鱼', '虾', '小麦'], specialty: '季节握寿司', intro: '把四季的鲜味，认真放进每一贯寿司。', caveat: '营业时间暂无可靠资料；含生食与海鲜。', evidenceIds: ['sushi-info', 'sushi-review', 'sushi-note'] },
+  { id: 'bbq', cover: { src: bbqCover, alt: '炭火烤串示意图', position: '50% 50%' }, name: '街角炭火', cuisine: '烧烤', host: '炭叔', color: '#AD7D3F', price: null, coordinates: [121.421, 31.2222], address: '上海市静安区万航渡路街区 · 演示位置', hours: '17:00–次日 01:00', tags: ['炭火现烤', '夜宵', '朋友小聚'], scenes: ['朋友聚餐'], quiet: false, spice: null, allergens: null, specialty: '炭烤拼盘', intro: '烟火升起来，今晚的故事才刚刚开始。', caveat: '人均价格与过敏原未知，需要向商家确认。', evidenceIds: ['bbq-info', 'bbq-review', 'bbq-note'] },
+]
+
+export const demoEvidence: Evidence[] = demoRestaurants.flatMap((r) => [
+  { id: `${r.id}-info`, restaurantId: r.id, kind: 'business' as const, title: '商家基础资料', text: `${r.cuisine} · ${r.price ? `参考人均 ¥${r.price}` : '人均价格未知'}。特色：${r.specialty}。${r.hours ? `营业时间 ${r.hours}。` : '营业时间暂无资料。'}`, images: [{ src: r.cover.src, alt: r.cover.alt }], source: '演示商家资料 · 菜系示意图', date: '2026-10-16', mock: true },
+  { id: `${r.id}-review`, restaurantId: r.id, kind: 'review' as const, title: '关于环境与用餐体验', text: r.quiet === true ? `“店里适合坐下来慢慢聊，${r.tags[0]}很有自己的特色。”` : r.quiet === false ? `“一起吃饭很有烟火气，人多的时候也比较热闹。”` : '“小店很温暖，不过这次没有特别留意店内的噪声。”', source: '演示评价 · 非真实用户评论', date: '2026-10-12', mock: true },
+  { id: `${r.id}-note`, restaurantId: r.id, kind: 'summary' as const, title: '用餐前需要确认', text: r.caveat, source: '基于演示资料的规则分析', date: '2026-10-16', mock: true },
+])

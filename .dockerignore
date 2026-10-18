@@ -1,0 +1,9 @@
+node_modules
+.git
+.env
+.env.*
+!.env.example
+*.local
+release
+coverage
+**/.DS_Store

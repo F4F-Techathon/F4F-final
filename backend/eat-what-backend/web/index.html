@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#15131a" />
+    <title>今晚吃啥</title>
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">MULTI-AGENT DINNER ROOM</p>
+          <h1>今晚吃啥</h1>
+        </div>
+        <button id="connection-status" class="status-pill" type="button" title="切换实时连接">
+          <i></i><span>本地演示</span>
+        </button>
+      </header>
+
+      <main>
+        <section class="voice-panel" aria-label="实时语音">
+          <div class="voice-heading"><span>餐厅语音讨论</span><small>可随时插话</small></div>
+          <p id="voice-status" role="status">正在检查语音服务…</p>
+          <div class="voice-actions">
+            <button id="voice-connect" type="button">开始语音对话</button>
+            <button id="voice-mute" type="button" hidden>静音麦克风</button>
+            <button id="voice-interrupt" type="button" hidden>暂停讨论</button>
+            <button id="voice-resume" type="button" hidden>播放声音</button>
+          </div>
+          <small>餐厅自动轮流讨论，主持人不发声；你随时插话，挂断后释放麦克风。</small>
+        </section>
+        <section class="host-line" aria-live="polite">
+          <div class="host-orb"><span></span></div>
+          <div>
+            <small>幕后协调 · 仅文字</small>
+            <p id="host-copy">餐厅会自动轮流讨论。你可以随时补充预算、口味、忌口，或点名让餐厅离场。</p>
+          </div>
+        </section>
+
+        <section id="stage" class="stage" aria-label="正在讨论的餐厅"></section>
+
+        <section class="holding-section">
+          <div class="section-heading"><span>候场</span><small>换店会保留已有偏好</small></div>
+          <div id="holding-list" class="holding-list"></div>
+        </section>
+
+        <section class="profile-section">
+          <div class="section-heading"><span>当前偏好</span><button id="reset-button" type="button">重新开始</button></div>
+          <div id="profile-chips" class="profile-chips"><span class="empty-chip">还没有形成偏好</span></div>
+        </section>
+
+        <section class="conversation-section">
+          <div class="section-heading"><span>讨论记录</span><small>点击证据查看原文位置</small></div>
+          <div id="conversation" class="conversation" aria-live="polite"></div>
+        </section>
+      </main>
+
+      <footer class="composer">
+        <div class="playback-controls"><span id="turn-status" role="status">准备就绪 · 随时输入新要求</span><button id="voice-toggle" type="button" aria-pressed="false">朗读：关</button></div>
+        <div class="quick-actions" id="quick-actions">
+          <button data-text="人均预算150，想吃适合朋友聚餐的">预算 150</button>
+          <button data-text="我花生过敏，不能吃含花生的东西">花生过敏</button>
+          <button data-text="我不要蓉姐川味了，换一家">换一家</button>
+          <button data-text="现在帮我总结并推荐一个">帮我决定</button>
+        </div>
+        <form id="composer-form">
+          <button id="mic-button" class="mic-button" type="button" aria-label="语音输入">麦克风</button>
+          <input id="message-input" autocomplete="off" placeholder="随时插话，例如：我海鲜过敏" maxlength="600" />
+          <button class="send-button" type="submit">发送</button>
+        </form>
+      </footer>
+    </div>
+
+    <dialog id="evidence-dialog" class="evidence-dialog">
+      <button id="close-evidence" class="dialog-close" type="button" aria-label="关闭">关闭</button>
+      <div id="evidence-content"></div>
+    </dialog>
+
+    <script src="/assets/vendor/livekit-client.umd.js"></script>
+    <script type="module" src="/assets/app.js"></script>
+  </body>
+</html>

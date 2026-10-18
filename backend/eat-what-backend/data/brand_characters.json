@@ -1,0 +1,18 @@
+[
+  {
+    "brand": "蜜雪冰城",
+    "aliases": ["蜜雪冰城", "MIXUE"],
+    "characterName": "雪王",
+    "kind": "brand_mascot",
+    "sourceUrl": "https://www.mxbc.com/index.php/store?id=3",
+    "basis": "品牌官网发展历程明确记载品牌IP形象雪王"
+  },
+  {
+    "brand": "肯德基",
+    "aliases": ["肯德基", "KFC"],
+    "characterName": "上校",
+    "kind": "brand_character",
+    "sourceUrl": "https://global.kfc.com/our-history",
+    "basis": "Colonel Sanders是肯德基沿用的创始人及品牌角色形象"
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "name": "what-to-eat-full-20261018",
+  "builtAt": "2026-10-18T04:47:17.712Z",
+  "source": {
+    "branch": "feat/agent-stage",
+    "commit": "4515546",
+    "uncommittedChanges": true
+  },
+  "node": "v24.14.1",
+  "data": {
+    "dataset": "dianping",
+    "source": "大众点评",
+    "imported": "2026-10-17",
+    "shops": 66
+  },
+  "run": {
+    "app": "/",
+    "console": "/director/",
+    "defaultPort": 3000,
+    "node": "^22.18.0 || >=24.12.0"
+  },
+  "checks": {
+    "typeCheck": "skipped",
+    "tests": "skipped",
+    "secretScan": "clean"
+  },
+  "backend": {
+    "folder": "backend/eat-what-backend",
+    "api": "http://127.0.0.1:8771",
+    "voice": "http://127.0.0.1:8772 (CosyVoice 3, NVIDIA GPU)",
+    "shopsData": "data/full (the same shops as the app)",
+    "tests": "skipped",
+    "windows": "start-windows-gpu.cmd, docs/windows-gpu.md"
+  }
+}

@@ -1,0 +1,5 @@
+# Complete API, VAD/STT and validation dependencies; CosyVoice stays in Python 3.10.
+-r requirements-livekit.txt
+psutil==7.2.2
+websockets==17.2
+zhconv>=1.4,<2

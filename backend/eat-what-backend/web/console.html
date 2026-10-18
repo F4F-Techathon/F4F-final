@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Multi-Agent 调试控制台</title>
+  <link rel="stylesheet" href="/assets/console.css?v=20261018-roster">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon">↔</span><div><p>REALTIME AGENT WORKBENCH</p><h1>Multi-Agent 调试控制台</h1></div></div>
+    <div class="top-actions"><span id="connection" class="pill">未连接</span><a href="/" target="_blank">原 Demo ↗</a><button id="export">导出事件</button></div>
+  </header>
+  <section class="notice"><b>后端决定谁说、说什么、怎么发声。</b><span>控制台只提交名单、采集麦克风、播放返回音频，并检查实际过程。麦克风默认关闭。</span></section>
+  <main class="workspace">
+    <aside class="panel setup">
+      <div class="panel-title"><h2>会话输入</h2><span class="tag">FRONTEND → SERVER</span></div>
+      <label class="field-label" for="endpoint">实时接口</label><input id="endpoint" spellcheck="false" aria-label="实时接口">
+      <div class="subhead"><b>参选餐厅</b><span id="selection-count">0 家</span></div>
+      <p class="muted">来自最新 CSV 的本地测试列表。正式接入由你的前端提交这些 ID。</p>
+      <div id="restaurants" class="restaurants"><p class="muted">正在读取本地资料…</p></div>
+      <details class="raw-input"><summary>直接提交餐厅 ID</summary><textarea id="ids" rows="3" placeholder="每行一个 shop_uuid" aria-label="餐厅ID列表"></textarea><button id="apply-ids">从文本选择</button></details>
+      <label class="field-label" for="preference-input">用户偏好（调试）</label><textarea id="preference-input" rows="3" maxlength="600" aria-label="用户偏好" placeholder="例如：人均50以内，想吃清淡点，环境安静"></textarea>
+      <p class="muted">建立会话时读取；会话中用文字或语音补充、更正，后续轮次持续保留。</p>
+      <label class="check-line"><input id="tts-enabled" type="checkbox" checked>接收并播放后端 TTS</label>
+      <button id="connect" class="primary wide">建立调试会话</button>
+      <button id="update-roster" class="wide" disabled>提交更新后的名单</button>
+      <div class="setup-meta"><span>资料版本</span><code id="data-version">—</code><span>会话 ID</span><code id="session-id">—</code><span>语音服务</span><code id="tts-provider">—</code><span>人格版本</span><code id="persona-version">—</code></div>
+      <details class="room-roster" open><summary id="room-roster-title">服务端角色名单</summary><div id="room-characters" class="muted">建立会话后返回</div></details>
+      <div class="boundary"><b>输入职责</b><p>提供餐厅列表与麦克风开关。这里额外提供文字、暂停、重置等按钮用于调试。</p></div>
+    </aside>
+    <section class="panel flow-panel">
+      <div class="panel-title"><h2>实时节点工作流</h2><span class="tag" id="workflow-status" role="status">等待执行</span></div>
+      <div class="pipeline" id="pipeline" hidden><span data-stage="data">资料 / 人格</span><span data-stage="input">输入 / 转写</span><span data-stage="plan">LLM 调度</span><span data-stage="generate">餐厅 LLM</span><span data-stage="check">核验</span><span data-stage="tts">TTS / 播放</span></div>
+      <div class="graph-legend"><span>● 处理中 / 流动连线</span><span>● 完成</span><span>● 失败 / 拦截</span><span>点击节点查看真实内容</span></div>
+      <div id="node-graph" class="node-graph"></div>
+      <div id="agent-activity" class="agent-activity" hidden></div>
+      <details class="execution-details"><summary>逐次执行记录与输出流</summary><div id="workflow-runs" class="workflow-runs"><p class="muted">尚未执行。点击「只跑一轮」查看真实流转。</p></div></details>
+    </section>
+    <section class="main-column">
+      <div class="metrics">
+        <div><span>当前发言</span><strong id="speaker">等待会话</strong></div>
+        <div><span>生成引擎</span><strong id="engine">—</strong></div>
+        <div><span>完整文本 / 首音频</span><strong id="latency">— / —</strong></div>
+        <div><span>音频收发</span><strong id="audio-stats">0 ↑ / 0 ↓</strong></div>
+      </div>
+      <section class="panel controls">
+        <div class="panel-title"><h2>实时控制</h2><span id="run-state" class="tag">尚未启动</span></div>
+        <div class="buttons"><button data-action="resume" disabled>开始 / 继续</button><button data-action="next" disabled>只跑一轮</button><button data-action="pause" disabled>暂停</button><button data-action="interrupt" class="danger" disabled>立即打断</button><button data-action="recommend" disabled>请求推荐</button><button data-action="reset" disabled>重置</button></div>
+        <div class="mic-row"><button id="mic" disabled>打开麦克风</button><div class="meter"><i id="mic-level"></i></div><span id="mic-status">麦克风关闭</span></div>
+        <form id="text-form"><input id="text-input" placeholder="输入调试问题，例如：我更在意环境，先别讲价格" maxlength="600" aria-label="调试文字"><button id="send" type="submit" disabled>发送</button></form>
+        <div id="banner" role="status">连接后不会自动打开麦克风。点击「只跑一轮」可先检查数据与生成链路。</div>
+      </section>
+      <section class="panel conversation-panel"><div class="panel-title"><h2>文本与语音</h2><span class="tag">SERVER → FRONTEND</span></div><div id="conversation" class="conversation"><div class="empty"><span>◌</span><b>还没有输出</b><p>每条发言都会显示服务端指定的餐厅、回合与引用。音频直接来自后端。</p></div></div></section>
+      <section class="panel event-panel"><div class="panel-title"><h2>事件时间线</h2><div class="event-tools"><select id="event-filter" aria-label="事件筛选"><option value="all">全部事件</option><option value="trace">中间过程</option><option value="text">文本</option><option value="audio">音频</option><option value="error">错误</option></select><label><input id="follow" type="checkbox" checked>跟随</label><button id="clear-log">清空显示</button></div></div><div id="events" class="events"><p class="muted">等待真实事件，没有预填的模拟日志。</p></div></section>
+    </section>
+    <aside class="panel inspector">
+      <div class="panel-title"><h2>过程检查器</h2><span id="epoch" class="tag">EPOCH —</span></div>
+      <div class="tabs" role="tablist"><button class="active" data-tab="workflow" role="tab" aria-selected="true">工作流</button><button data-tab="state" role="tab" aria-selected="false">会话</button><button data-tab="persona" role="tab" aria-selected="false">人格</button><button data-tab="context" role="tab" aria-selected="false">Agent 输入</button><button data-tab="event" role="tab" aria-selected="false">原始事件</button></div>
+      <div id="inspect-hint" class="muted inspector-hint">点击上方节点固定查看最近一次执行的完整提示词、输入与输出。失败节点包含具体原因及可用引用。未选节点时跟随最新步骤。</div>
+      <button id="workflow-follow" class="wide">跟随最新步骤</button>
+      <select id="persona-picker" hidden aria-label="人格餐厅"></select>
+      <pre id="inspect-content">等待连接…</pre>
+      <section class="invariants"><b>当前能力边界</b><ul><li>调度器与餐厅均调用 LLM，调度器不发声。</li><li>人格由各店基本资料规则构建。</li><li>调度输出须通过 ID 与结构检查；失败暂停并显示错误。</li><li>当前转写仅句末 final，不伪装 partial。</li><li>证据检查覆盖归属和数值，未完成全部语义核验。</li></ul></section>
+    </aside>
+  </main>
+  <script type="module" src="/assets/console.js?v=20261018-validation"></script>
+</body>
+</html>

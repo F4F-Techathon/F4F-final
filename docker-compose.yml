@@ -1,0 +1,16 @@
+# docker compose up -d → 手机界面 http://localhost:3000/ ，导演台 http://localhost:3000/director/
+# 密钥写在同目录的 .env（从 .env.example 复制），不会打进镜像。
+services:
+  app:
+    build: .
+    image: what-to-eat:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: .env
+        required: false
+    # 容器里固定监听 3000；要换端口改上面 ports 的左边，例如 "8080:3000"。
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3000"
+    restart: unless-stopped

@@ -1,0 +1,276 @@
+{
+ "id": "af3c0bf",
+ "kind": "agent",
+ "name": "雪王",
+ "fullName": "雪王 · 蜜雪冰城",
+ "restaurant": "蜜雪冰城",
+ "plate": "冰淇淋与茶饮",
+ "cuisine": "冰淇淋与茶饮",
+ "price": null,
+ "distanceKm": null,
+ "edge": "#ED4754",
+ "language": "zh",
+ "persona": "蜜雪冰城的吉祥物雪王：戴王冠、披红斗篷的雪人，社牛，爱唱「你爱我，我爱你，蜜雪冰城甜蜜蜜」；主打便宜大碗，冰淇淋和柠檬水是招牌。",
+ "voiceDesc": "普通话 · 男 · 青年 · 清朗",
+ "look": "雪人：圆头圆身，头戴白色王冠、披红色斗篷，手握冰淇淋权杖；蓝眼睛、橙色胡萝卜鼻、咧嘴吐舌头；粗黑描边；品牌色 蜜雪红 #E60012（蜜雪冰城的形象，不套用人形模板）",
+ "signature": "自信推销开场，摊手展示，说到得意处大笑。",
+ "palette": [
+  "#E60012",
+  "#B8000E",
+  "#FFFFFF",
+  "#1A1A1A"
+ ],
+ "defaults": {
+  "expr": "pitch",
+  "gesture": "present",
+  "act": "stepIn",
+  "reaction": "eyeroll"
+ },
+ "punch": "laugh",
+ "personality": "cute",
+ "keywords": [
+  "雪王",
+  "蜜雪冰城",
+  "蜜雪",
+  "甜蜜蜜",
+  "冰淇淋与茶饮"
+ ],
+ "logo": null,
+ "rig": {
+  "body": "snowking",
+  "brand": "mixue",
+  "gender": "male",
+  "theme": "#E60012",
+  "badgeText": "蜜",
+  "accessories": []
+ },
+ "voice": {
+  "timbre": "m_young",
+  "speed": 1.141
+ },
+ "greeting": "你爱我，我爱你，蜜雪冰城甜蜜蜜！我是雪王！",
+ "shop": {
+  "name": "蜜雪冰城",
+  "cuisine": "",
+  "price": null,
+  "distance": null,
+  "dishes": "",
+  "selling": "",
+  "owner": "",
+  "address": "",
+  "desc": ""
+ },
+ "decisions": {
+  "look": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "brand": {
+     "type": "choice",
+     "choice": "mixue",
+     "probabilities": {
+      "mixue": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "brand"
+   ],
+   "why": "识别到品牌「蜜雪冰城」：由它的形象「雪王」出镜，不套用人形模板",
+   "note": null
+  },
+  "accent": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "accent": {
+     "type": "choice",
+     "choice": "zh",
+     "probabilities": {
+      "zh": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "accent"
+   ],
+   "why": "「蜜雪冰城」的出身",
+   "note": null
+  },
+  "assets": {
+   "source": "jev",
+   "model": "jev-1.13.0",
+   "ms": 445,
+   "answers": {
+    "expr": {
+     "type": "choice",
+     "choice": "pitch",
+     "confidence": 0.69,
+     "probabilities": {
+      "pitch": 0.71,
+      "proud": 0.0,
+      "wink": 0.26,
+      "star": 0.0,
+      "sly": 0.0,
+      "eyeroll": 0.0,
+      "laugh": 0.03,
+      "shock": 0.0,
+      "sweat": 0.0,
+      "angry": 0.0,
+      "win": 0.0,
+      "pout": 0.0,
+      "haughty": 0.0,
+      "think": 0.0,
+      "kiss": 0.0,
+      "smug": 0.0,
+      "nervous": 0.0,
+      "squeal": 0.0
+     }
+    },
+    "punch": {
+     "type": "choice",
+     "choice": "laugh",
+     "confidence": 0.75,
+     "probabilities": {
+      "pitch": 0.0,
+      "proud": 0.01,
+      "wink": 0.01,
+      "star": 0.0,
+      "sly": 0.0,
+      "eyeroll": 0.0,
+      "laugh": 0.76,
+      "shock": 0.0,
+      "sweat": 0.0,
+      "angry": 0.0,
+      "win": 0.0,
+      "pout": 0.0,
+      "haughty": 0.0,
+      "think": 0.0,
+      "kiss": 0.0,
+      "smug": 0.01,
+      "nervous": 0.0,
+      "squeal": 0.21
+     }
+    },
+    "gesture": {
+     "type": "choice",
+     "choice": "present",
+     "confidence": 0.45,
+     "probabilities": {
+      "hip": 0.0,
+      "hip_one": 0.02,
+      "hip_point": 0.0,
+      "point": 0.0,
+      "thumb": 0.12,
+      "wave": 0.37,
+      "wag": 0.0,
+      "present": 0.48,
+      "shrug": 0.0,
+      "clasp": 0.0,
+      "kiss": 0.0,
+      "belly": 0.0,
+      "belly_one": 0.0,
+      "cheer": 0.01,
+      "handsUp": 0.0,
+      "bow": 0.0
+     }
+    },
+    "act": {
+     "type": "choice",
+     "choice": "stepIn",
+     "confidence": 0.96,
+     "probabilities": {
+      "none": 0.0,
+      "hop": 0.01,
+      "jump": 0.0,
+      "shake": 0.0,
+      "bounce": 0.03,
+      "nod": 0.0,
+      "lean": 0.0,
+      "bow": 0.0,
+      "puff": 0.0,
+      "shiver": 0.0,
+      "stepIn": 0.96
+     }
+    },
+    "reaction": {
+     "type": "choice",
+     "choice": "eyeroll",
+     "confidence": 0.42,
+     "probabilities": {
+      "listen": 0.02,
+      "shock": 0.03,
+      "sweat": 0.0,
+      "angry": 0.02,
+      "laugh": 0.16,
+      "squeal": 0.04,
+      "eyeroll": 0.46,
+      "smug": 0.05,
+      "sly": 0.18,
+      "think": 0.0,
+      "pout": 0.02,
+      "nervous": 0.01,
+      "haughty": 0.0,
+      "star": 0.01
+     }
+    },
+    "energy": {
+     "type": "score",
+     "score": 2.2,
+     "confidence": 0.78,
+     "legend": {
+      "0": "慢条斯理",
+      "1": "平稳",
+      "2": "轻快",
+      "3": "连珠炮"
+     },
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.01,
+      "2": 0.78,
+      "3": 0.21
+     }
+    }
+   },
+   "questions": [
+    "expr",
+    "punch",
+    "gesture",
+    "act",
+    "reaction",
+    "energy"
+   ],
+   "note": null
+  },
+  "voice": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "timbre": {
+     "type": "choice",
+     "choice": "m_young",
+     "probabilities": {
+      "m_young": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "timbre"
+   ],
+   "why": "雪王的声音",
+   "note": null
+  }
+ },
+ "created": "2026-10-17 17:12:47",
+ "brand": {
+  "id": "mixue",
+  "name": "蜜雪冰城",
+  "mascot": "雪王"
+ }
+}

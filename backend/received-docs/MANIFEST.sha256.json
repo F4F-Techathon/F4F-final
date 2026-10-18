@@ -1,0 +1,50 @@
+{
+  "00-前端交接说明.md": {
+    "bytes": 4195,
+    "sha256": "843f56dcb21ae2cb42ae575098c351e058a4d96be26a0e6fc96dd506fd576ff8"
+  },
+  "01-后端部署.md": {
+    "bytes": 6203,
+    "sha256": "bd00c8d44ced5922b96ada7702680fc21f9d37a9398e7de2a8bac2dabd41647d"
+  },
+  "02-后端实现索引.md": {
+    "bytes": 2042,
+    "sha256": "8210be1c4e6f4b02921d97e4cf51587a2fbd2908fac37f1c9baf744e9894fcc7"
+  },
+  "历史与详细说明/CONSOLE.md": {
+    "bytes": 25495,
+    "sha256": "eceb95e59116379b206749d9d0e5002600d23cc01ae6080a9a5514fe2045117e"
+  },
+  "历史与详细说明/COSYVOICE.md": {
+    "bytes": 2894,
+    "sha256": "7500dc8eb4fbca054fcebf9d1c70b926a342bb7dd80b4675489e5c30be8c4b85"
+  },
+  "历史与详细说明/DEMO验收.md": {
+    "bytes": 2630,
+    "sha256": "d92fb06f67ce5bf7f1f615ccfe477073b9f603ffecafc4798e016492f9a34387"
+  },
+  "历史与详细说明/handoff/AGENT-SPECS.md": {
+    "bytes": 16360,
+    "sha256": "13e90e8e55ae56033e98641125aae48d646e2566c696e956d8fbeab9ad672630"
+  },
+  "历史与详细说明/handoff/README.md": {
+    "bytes": 20216,
+    "sha256": "9153e45d1b9852ad7aa1ac22a525906c9fa86c180758f88766ecfe4a15bafc5c"
+  },
+  "历史与详细说明/handoff/最终方案.md": {
+    "bytes": 30729,
+    "sha256": "4e68a7d1a85e577f676d9e13dc9f9841c7dbecf378697c3c6205dc1f9d2e34f4"
+  },
+  "历史与详细说明/HANDOFF.md": {
+    "bytes": 12002,
+    "sha256": "30be17f0886175985226573a1f6b4cfd5a30d8e9168a14e35785de87f644fac5"
+  },
+  "历史与详细说明/README.md": {
+    "bytes": 5440,
+    "sha256": "cedb264195a39d868402678388f7efeeb9cf0be4579af546d3b68b4621a0bd5b"
+  },
+  "历史与详细说明/VOICE-DEMO.md": {
+    "bytes": 2496,
+    "sha256": "9cbbb09d8cf056dcf99551c751982e52ca35fda33bb95fa12fae0c65d7249ab1"
+  }
+}

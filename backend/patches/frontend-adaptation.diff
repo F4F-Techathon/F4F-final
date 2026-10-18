@@ -1,0 +1,1688 @@
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/scripts/cosyvoice_service.py eat-what-backend/scripts/cosyvoice_service.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/scripts/cosyvoice_service.py	2026-10-18 05:49:34
++++ eat-what-backend/scripts/cosyvoice_service.py	2026-10-18 06:07:43
+@@ -1,4 +1,10 @@
+-"""Local CosyVoice 3 GPU service, isolated from the demo's Python runtime."""
++"""Local CosyVoice 3 GPU service, isolated from the demo's Python runtime.
++
++Devices (COSYVOICE_DEVICE): auto picks CUDA when present (the delivered NVIDIA route, unchanged: fp16 on the GPU),
++otherwise Apple Silicon's GPU through MPS, otherwise CPU. On MPS the LLM and the flow model run on the GPU while the
++HiFT vocoder stays on the CPU: its F0 predictor computes in float64, which MPS does not support.
++COSYVOICE_DIR (code) and COSYVOICE_MODEL_DIR (weights) let an existing local install be reused as is.
++"""
+ import asyncio
+ import os
+ import queue
+@@ -9,16 +15,24 @@
+ from pathlib import Path
+ 
+ ROOT = Path(__file__).resolve().parents[1]
++# Caches live in the project runtime unless the environment already points somewhere (e.g. a wetext
++# frontend another local install has downloaded into ~/.cache/modelscope).
+ for key, suffix in {'HF_HOME': 'cache/huggingface', 'TORCH_HOME': 'cache/torch',
+                     'MODELSCOPE_CACHE': 'cache/modelscope', 'XDG_CACHE_HOME': 'cache/xdg',
+                     'TEMP': 'tmp', 'TMP': 'tmp', 'MPLCONFIGDIR': 'cache/matplotlib',
+                     'NUMBA_CACHE_DIR': 'cache/numba'}.items():
++    if os.environ.get(key):
++        continue
+     folder = ROOT / 'runtime' / suffix
+     folder.mkdir(parents=True, exist_ok=True)
+     os.environ[key] = str(folder)
+ os.environ['HF_HUB_OFFLINE'] = '1'
+ os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+-sys.path[:0] = [str(ROOT / 'runtime/CosyVoice'), str(ROOT / 'runtime/CosyVoice/third_party/Matcha-TTS')]
++# Ops MPS lacks fall back to the CPU instead of failing the request.
++os.environ.setdefault('PYTORCH_ENABLE_MPS_FALLBACK', '1')
++CODE_DIR = (ROOT / os.path.expanduser(os.getenv('COSYVOICE_DIR', 'runtime/CosyVoice'))).resolve()
++MODEL_DIR = (ROOT / os.path.expanduser(os.getenv('COSYVOICE_MODEL_DIR', str(CODE_DIR / 'pretrained_models/Fun-CosyVoice3-0.5B')))).resolve()
++sys.path[:0] = [str(CODE_DIR), str(CODE_DIR / 'third_party/Matcha-TTS')]
+ 
+ import numpy as np
+ import torch
+@@ -28,6 +42,7 @@
+ from cosyvoice.cli.cosyvoice import AutoModel
+ 
+ model = None
++device = 'cpu'
+ gpu_lock = threading.Lock()
+ active_stop = None
+ stats = {'completed': 0, 'cancelled': 0}
+@@ -35,11 +50,38 @@
+ VOICES = {'rong': 'f_mid.wav', 'hua': 'm_mid.wav', 'pierre': 'm_fr.wav'}
+ 
+ 
++def pick_device():
++    wanted = os.getenv('COSYVOICE_DEVICE', 'auto').strip().lower()
++    if wanted == 'auto':
++        return 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
++    if wanted == 'cuda' and not torch.cuda.is_available() or wanted == 'mps' and not torch.backends.mps.is_available():
++        raise RuntimeError(f'COSYVOICE_DEVICE={wanted} is not available on this machine')
++    return wanted
++
++
++def move_to_mps(inner):
++    """LLM and flow on Apple's GPU; the vocoder stays on the CPU (float64 F0 predictor)."""
++    inner.device = torch.device('mps')
++    inner.llm.to(inner.device)
++    inner.flow.to(inner.device)
++    vocode = inner.hift.inference
++    # CosyVoice 2 passes (speech_feat, cache_source), CosyVoice 3 (speech_feat, finalize): move whatever tensors
++    # arrive to the CPU and leave the rest as given.
++    def cpu_vocoder(*args, **kwargs):
++        cpu = lambda value: value.to('cpu', torch.float32) if torch.is_tensor(value) and value.is_floating_point() else value.to('cpu') if torch.is_tensor(value) else value
++        return vocode(*[cpu(v) for v in args], **{k: cpu(v) for k, v in kwargs.items()})
++    inner.hift.inference = cpu_vocoder
++
++
+ @asynccontextmanager
+ async def lifespan(app):
+-    global model
+-    torch.set_num_threads(4)
+-    model = AutoModel(model_dir=str(ROOT / 'runtime/CosyVoice/pretrained_models/Fun-CosyVoice3-0.5B'), fp16=True)
++    global model, device
++    device = pick_device()
++    torch.set_num_threads(int(os.getenv('COSYVOICE_THREADS', '4')))
++    # fp16 is a CUDA option upstream; MPS and CPU keep fp32.
++    model = AutoModel(model_dir=str(MODEL_DIR), fp16=device == 'cuda' and os.getenv('COSY_FP16', '1') == '1')
++    if device == 'mps':
++        move_to_mps(model.model)
+     # Upstream inference runs token generation in its own thread. End it at the
+     # next token on disconnect, then let its normal finalization clean caches.
+     original = model.model.llm.inference
+@@ -56,7 +98,11 @@
+     model.model.llm.inference = cancellable_inference
+     for voice, filename in VOICES.items():
+         model.add_zero_shot_spk(PROMPT, str(ROOT / 'voices' / filename), voice)
+-    print('CosyVoice 3 ready: GPU=' + str(torch.cuda.is_available()), flush=True)
++    if device != 'cuda' and os.getenv('COSYVOICE_WARMUP', '1') == '1':
++        # The first request on MPS/CPU pays kernel set-up; pay it before anyone listens.
++        for _ in model.inference_zero_shot('你好。', '', '', zero_shot_spk_id='rong', stream=False, text_frontend=False):
++            pass
++    print(f'CosyVoice 3 ready: device={device} GPU={torch.cuda.is_available() or device == "mps"}', flush=True)
+     yield
+ 
+ 
+@@ -71,7 +117,7 @@
+ @app.get('/health')
+ def health():
+     return {'ready': model is not None, 'provider': 'cosyvoice3-local', 'sampleRate': 24000,
+-            'cuda': torch.cuda.is_available(), 'modelDirectory': str(ROOT / 'runtime/CosyVoice/pretrained_models/Fun-CosyVoice3-0.5B'),
++            'cuda': torch.cuda.is_available(), 'device': device, 'modelDirectory': str(MODEL_DIR),
+             'voices': list(VOICES), 'busy': gpu_lock.locked(), **stats}
+ 
+ 
+@@ -133,4 +179,4 @@
+ 
+ if __name__ == '__main__':
+     import uvicorn
+-    uvicorn.run(app, host='127.0.0.1', port=8772, log_level='info')
++    uvicorn.run(app, host=os.getenv('COSYVOICE_HOST', '127.0.0.1'), port=int(os.getenv('COSYVOICE_PORT', '8772')), log_level='info')
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/app.py eat-what-backend/server/app.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/app.py	2026-10-18 05:49:34
++++ eat-what-backend/server/app.py	2026-10-18 06:14:25
+@@ -14,17 +14,13 @@
+ from .config import ROOT, RUNTIME, settings
+ from .data import RestaurantRepository
+ from .orchestrator import MultiAgentOrchestrator
+-from .providers.llm import OpenAICompatibleLLM
++from .providers.llm import make_llm
+ from .store import SessionStore
+ 
+ 
+ repo = RestaurantRepository(settings.data_path)
+ store = SessionStore(settings.database_path, repo.ordered_ids())
+-llm = (
+-    OpenAICompatibleLLM(settings.llm_base_url, settings.llm_api_key, settings.llm_model, settings.llm_timeout_seconds)
+-    if settings.llm_ready
+-    else None
+-)
++llm = make_llm(settings) if settings.llm_ready else None
+ orchestrator = MultiAgentOrchestrator(repo, store, llm, runtime_mode="demo")
+ 
+ app = FastAPI(title="Tonight Eats", version="0.1.0")
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/config.py eat-what-backend/server/config.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/config.py	2026-10-18 05:49:34
++++ eat-what-backend/server/config.py	2026-10-18 06:22:58
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ import os
++import sys
+ from dataclasses import dataclass
+ from pathlib import Path
+ 
+@@ -8,13 +9,11 @@
+ ROOT = Path(__file__).resolve().parent.parent
+ 
+ 
+-def _load_local_env() -> None:
+-    """Load developer-only values without ever requiring a dotenv dependency."""
+-    path = ROOT / ".env.local"
+-    if not path.exists():
+-        return
++def _load_env_file(path: Path) -> None:
+     for raw_line in path.read_text(encoding="utf-8").splitlines():
+         line = raw_line.strip()
++        if line.startswith("export "):
++            line = line[7:].strip()
+         if not line or line.startswith("#") or "=" not in line:
+             continue
+         key, value = line.split("=", 1)
+@@ -23,6 +22,22 @@
+             os.environ[key] = value.strip().strip('"').strip("'")
+ 
+ 
++def _load_local_env() -> None:
++    """Load developer-only values without ever requiring a dotenv dependency.
++
++    `.env.local` first; then any files named in EAT_WHAT_ENV_FILES (os.pathsep-separated), so keys kept in
++    another project's env file are read in place instead of being copied here. Earlier values win; nothing
++    is ever printed."""
++    local = ROOT / ".env.local"
++    if local.is_file():
++        _load_env_file(local)
++    # Read after .env.local, which may itself name the shared files.
++    for name in os.getenv("EAT_WHAT_ENV_FILES", "").split(os.pathsep):
++        path = Path(name.strip()).expanduser()
++        if name.strip() and path.is_file():
++            _load_env_file(path)
++
++
+ _load_local_env()
+ 
+ # Keep all newly downloaded models, temporary files and caches on the project drive.
+@@ -52,10 +67,26 @@
+     llm_model: str = os.getenv("LLM_MODEL", "deepseek-pro").strip()
+     llm_timeout_seconds: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "22"))
+     public_base_url: str = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+-    tts_provider: str = os.getenv("TTS_PROVIDER", "windows" if os.name == "nt" else "cosyvoice").strip()
++    # Windows: SAPI voices; macOS: system voices (CosyVoice 3 on Apple's GPU is slower than real time); others: CosyVoice.
++    tts_provider: str = os.getenv("TTS_PROVIDER", "windows" if os.name == "nt" else "macos" if sys.platform == "darwin" else "cosyvoice").strip()
+     whisper_model: str = os.getenv("WHISPER_MODEL", str(RUNTIME / "models" / "faster-whisper-small"))
+     whisper_device: str = os.getenv("WHISPER_DEVICE", "cpu")
+     whisper_compute_type: str = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
++    # faster-whisper (CUDA or CPU, the delivered path) or transformers (Apple GPU via MPS, or CPU).
++    whisper_backend: str = os.getenv("WHISPER_BACKEND", "faster-whisper").strip()
++    # The merchant CSV snapshot the realtime console reads; relative paths are under the project root.
++    console_data_dir: Path = ROOT / os.getenv("CONSOLE_DATA_DIR", "data/latest")
++    # How long a finished turn waits for the frontend's playback receipt. A stage that pauses between
++    # lines (the phone's pause button, a hidden tab) needs longer than the console's 12 s.
++    playback_ack_timeout: float = float(os.getenv("PLAYBACK_ACK_TIMEOUT_SECONDS", "12"))
++    # OpenAI-compatible providers that think by default (Gemini) spend max_tokens on thinking; "none" turns it off.
++    llm_reasoning_effort: str = os.getenv("LLM_REASONING_EFFORT", "").strip()
++    # A backup OpenAI-compatible provider, used when the primary LLM_* provider fails (see providers/llm.py).
++    llm_fallback_base_url: str = os.getenv("LLM_FALLBACK_BASE_URL", "").strip().rstrip("/")
++    llm_fallback_api_key: str = os.getenv("LLM_FALLBACK_API_KEY", "").strip()
++    llm_fallback_model: str = os.getenv("LLM_FALLBACK_MODEL", "").strip()
++    llm_fallback_reasoning_effort: str = os.getenv("LLM_FALLBACK_REASONING_EFFORT", "").strip()
++    llm_fallback_cooldown: float = float(os.getenv("LLM_FALLBACK_COOLDOWN_SECONDS", "300"))
+ 
+     @property
+     def livekit_ready(self) -> bool:
+@@ -63,7 +94,11 @@
+ 
+     @property
+     def llm_ready(self) -> bool:
+-        return bool(self.llm_base_url and self.llm_model)
++        return bool(self.llm_base_url and self.llm_model) or self.llm_fallback_ready
++
++    @property
++    def llm_fallback_ready(self) -> bool:
++        return bool(self.llm_fallback_base_url and self.llm_fallback_model)
+ 
+ 
+ settings = Settings()
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_coordinator.py eat-what-backend/server/console_coordinator.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_coordinator.py	2026-10-18 05:49:34
++++ eat-what-backend/server/console_coordinator.py	2026-10-18 07:05:19
+@@ -82,7 +82,15 @@
+         response = {'turnId': last['turnId'], 'attackerId': last['restaurantId'],
+                     'challengedRestaurantId': last['targetRestaurantId'], 'text': last['text']}
+     proactive = ['present', 'attack', 'respond', 'compare']
+-    if response:
++    # Who has been heard: with several shops on stage, attack and reply can settle into two of them while the
++    # others never get a word in (seen with five shops: 12 turns, 2 speakers).
++    spoken = Counter(h.get('restaurantId') for h in turns)
++    silent = [sid for sid in candidates if not spoken[sid]]
++    pair = {h.get('restaurantId') for h in turns[-4:]}
++    if silent and len(turns) >= 2 and (len(pair) <= 2 or len(turns) >= len(candidates)):
++        reminder = (f'还有{len(silent)}家没开口（notYetSpoken）。下一轮优先让其中一家参与，可以present，也可以attack/compare在场任何一家；'
++                    '别让对话只在两三家之间来回。用户的新问题仍然优先。')
++    elif response:
+         reminder = '刚才有明确指向的交锋，给真正被指向者接招机会；别让无关第三家冒充受攻击者。'
+     elif len(recent) >= 4 and any(not counts[a] for a in ('present', 'compare')):
+         missing = [a for a in ('present', 'compare') if not counts[a]]
+@@ -96,6 +104,7 @@
+             'missingProactiveActs': [act for act in proactive if not counts[act]],
+             'turnsSinceAttack': next((i for i, h in enumerate(reversed(turns)) if h.get('speechAct') == 'attack'), len(turns)),
+             'attackOpportunities': opportunities, 'responseOpportunity': response,
++            'speakerCounts': {sid: spoken[sid] for sid in candidates}, 'notYetSpoken': silent,
+             'usedAttackPoints': used_attack_points(candidates, view),
+             'mixReminder': reminder,
+             'note': '只读节奏与证据索引；LLM决定动作/角色/依据，用户新问题优先，不为凑比例编造攻击'}
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_data.py eat-what-backend/server/console_data.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_data.py	2026-10-18 05:49:34
++++ eat-what-backend/server/console_data.py	2026-10-18 06:23:10
+@@ -16,12 +16,17 @@
+         self.facts = {}
+         self.version = hashlib.sha256(b"".join(p.read_bytes() for p in sorted(directory.glob("*.csv")))).hexdigest()[:12]
+         self.counts = {}
++        self.skipped = {}
+         for name in ("商户基础信息", "推荐菜", "最新评论", "差评", "代金券", "到店套餐"):
+             with (directory / f"{name}.csv").open(encoding="utf-8-sig", newline="") as f:
+                 rows = list(csv.DictReader(f))
+             self.counts[name] = len(rows)
+             for row, raw in enumerate(rows, 2):
+                 sid = raw["shop_uuid"]
++                # A scrape can hold dishes or reviews of a shop that is not in the shop list; those rows are skipped.
++                if name != "商户基础信息" and sid not in self.facts:
++                    self.skipped[name] = self.skipped.get(name, 0) + 1
++                    continue
+                 if name == "商户基础信息":
+                     self.shops[sid] = {
+                         "id": sid, "name": raw["shop_name"], "category": raw["category"],
+@@ -56,8 +61,8 @@
+                                 "sourceFile": source + ".csv", "sourceRow": row, "sourceField": field,
+                                 "sources": [{"file": source + ".csv", "row": row}], **extra})
+ 
+-    def persona(self, sid):
+-        return build_persona(self.shops[sid], self.version)
++    def persona(self, sid, override=None):
++        return build_persona(self.shops[sid], self.version, override)
+ 
+     def select(self, sid, index, used, query=""):
+         facts = self.facts[sid]
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_localize.py eat-what-backend/server/console_localize.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_localize.py	1970-01-01 08:00:00
++++ eat-what-backend/server/console_localize.py	2026-10-18 12:21:47
+@@ -0,0 +1,135 @@
++"""Regional hosts speak their own dialect, with the Mandarin kept as its gloss (原文释义).
++
++Ported from agent-studio's Localizer (agent-studio/server/llm.py). As there, the line is written in 普通话 first: the
++restaurant agent writes it and the console checks verify it (numbers against the evidence, length, repeated attacks).
++A host whose cuisine has a regional language then has the verified line rewritten into that dialect before it is
++voiced. The frontend's generator chose that language (its accent step: 四川话 for 川菜, 粤语 for 粤菜 and 潮汕牛肉火锅,
++湖南话 for 湘菜 …) and sends it in session.start's characters. The stage shows the dialect, with the Mandarin under it.
++
++A rewrite must keep every arabic number, the host's name and the restaurant's name; otherwise, or if the model is
++slow, truncated or odd, the host says the Mandarin as written. Foreign-accented Mandarin (英式口音普通话 …) is not
++rewritten here: the persona already gives those hosts their touch of a foreign language.
++"""
++from __future__ import annotations
++
++import asyncio
++import re
++import time
++from collections import OrderedDict
++
++COMMON = ("只输出改写后的这一句台词本身，不加引号、不加解释、不加前缀。保留原句的意思、语气、数字和价格，长度与原句相近，适合直接配音。"
++          "人名、店名、菜名照原样保留，不增加原句没有的事实。")
++
++# id → (label, system prompt, few-shot pairs). The first three are agent-studio's own targets with the film's pairs.
++TARGETS = {
++    "sc": ("四川话", "你是四川成都的川菜馆店主的台词编剧。把普通话台词改写成店主会说的四川话口语："
++                   "多用四川话词汇和语气词（屋头、巴适、安逸、啥子、莫得、晓得、要得、嘛、噻、哦、咧、得很），但要让普通话观众也能看懂，用普通话汉字书写。",
++           [("来我家吧！正宗川菜，麻辣鲜香，人均才八十五！", "来我屋头嘛！正宗川菜，麻辣鲜香，人均才八十五！"),
++            ("他那份牛排才三分熟，切开还在喊妈妈呢！", "他那个牛排三分熟，切开还在喊妈妈咧！"),
++            ("约会？我们有露台包间和鸳鸯锅，不辣也很舒服！", "约会？我们有露台包间，鸳鸯锅，不辣也巴适！")]),
++    "yue": ("粤语", "你是广州粤菜馆店主的台词编剧。把普通话台词翻译成地道的粤语（广州话）口语，"
++                  "用粤语正字书写（嘅、咗、唔、佢、喺、嚟、咩、啲、冇、係、而家、点解、仲、晒、喎、啦）。",
++            [("辣到嘴都肿了，还怎么约会？来饮早茶，老火汤煲足四个钟。", "辣到个嘴都肿晒，仲点拍拖啊？嚟饮早茶啦，老火汤煲足四个钟！"),
++             ("七道菜？人均八百八，吃完要吃一个月泡面！", "七道菜？人均八百八，食完要食成个月公仔面喎！"),
++             ("啧，又被她抢先了。", "啧，又畀佢抢先咗。")]),
++    "fr": ("法语", "你是一位法国主厨的台词编剧。把普通话台词翻译成自然、口语化的法语，带一点主厨的优雅和戏剧感。",
++           [("我的天哪……", "Mon Dieu…"), ("祝你们用餐愉快！", "Bon appétit !"), ("那叫艺术！你不懂！", "C'est de l'art ! Tu n'y comprends rien !")]),
++    "hunan": ("湖南话", None,
++              [("你们急什么，先尝一口辣椒炒肉再说。", "你们急么子咯，先恰一口辣椒炒肉再讲啰。"),
++               ("人均二十七，吃得饱饱的，不好吗？", "人均二十七，恰得饱饱的，冇得好？蛮好咯！")]),
++    "shanghai": ("上海话", None,
++                 [("我们家的糖醋小排，味道真的很好。", "阿拉屋里厢额糖醋小排，味道老灵额。"),
++                  ("你别急，先坐下来慢慢吃。", "侬覅急，先坐下来慢慢叫吃。")]),
++    "dongbei": ("东北话", None,
++                [("我们家的锅包肉，又酥又脆，特别好吃。", "俺家锅包肉，嘎嘎酥脆，老好吃了！"),
++                 ("你说什么呢？量这么大还嫌少？", "你说啥呢？量这老大还嫌少啊？")]),
++}
++# The other regional languages of the frontend's catalog (src/agents/generation/languages.ts), on agent-studio's
++# generic prompt.
++REGIONAL = {"henan": "河南话", "hubei": "湖北话", "jiangxi": "江西话", "minnan": "闽南话", "shaanxi": "陕西话", "shanxi": "山西话",
++            "shandong": "山东话", "tianjin": "天津话", "yunnan": "云南话", "guizhou": "贵州话", "gansu": "甘肃话", "ningxia": "宁夏话"}
++LANGUAGES = {key: value[0] for key, value in TARGETS.items()} | REGIONAL
++
++REWRITE_TIMEOUT = 12.0
++DIGITS = re.compile(r"\d+(?:\.\d+)?")
++
++
++def dialect_of(language):
++    """The dialect a host speaks, or None for 普通话 and foreign-accented Mandarin."""
++    return LANGUAGES.get(language) if isinstance(language, str) else None
++
++
++def system_for(language):
++    label = LANGUAGES[language]
++    target = TARGETS.get(language)
++    prompt = target[1] if target and target[1] else (f"你是一位{label}地区餐馆店主的台词编剧。把普通话台词改写成地道的{label}口语："
++                                                    f"适当使用{label}的常用词汇和语气词，但要让普通话观众也能看懂，用普通话汉字书写。")
++    shots = target[2] if target else []
++    examples = "".join(f"\n原句：{a}\n改写：{b}" for a, b in shots)
++    return prompt + COMMON + (f"\n示例：{examples}" if examples else "")
++
++
++def unquote(text):
++    return text[1:-1].strip() if len(text) >= 2 and text[0] in "\"“「『'" and text[-1] in "\"”」』'" else text
++
++
++def clean(text):
++    """The rewritten line alone: no reasoning, label or quotes around it, first line only."""
++    text = re.sub(r"^<think>.*?</think>", "", (text or "").strip(), flags=re.S).strip()
++    text = text.splitlines()[0].strip() if text else ""
++    return unquote(re.sub(r"^(?:改写|译文|输出|[一-鿿]{2,4}话|粤语|法语)[：:]\s*", "", unquote(text)))
++
++
++def problem(source, out, keep):
++    """Why a rewrite cannot be voiced, or None."""
++    if not out:
++        return "改写结果为空"
++    if len(out) > max(60, len(source) * 3):
++        return "改写结果过长"
++    missing = [n for n in DIGITS.findall(source) if n not in DIGITS.findall(out)]
++    if missing:
++        return "改写丢了数字：" + "、".join(missing)
++    lost = [name for name in keep if name and name in source and name not in out]
++    if lost:
++        return "改写丢了名字：" + "、".join(lost)
++    return None
++
++
++class Localizer:
++    def __init__(self, llm, timeout=REWRITE_TIMEOUT):
++        self.llm, self.timeout = llm, timeout
++        self.cache = OrderedDict()
++
++    async def localize(self, text, language, keep=()):
++        """→ {text, gloss, language, ms, note?}. `gloss` is the Mandarin when the text changed, else None."""
++        source = (text or "").strip()
++        base = {"text": source, "gloss": None, "language": language, "ms": 0}
++        if not self.llm or not source or not dialect_of(language):
++            return base
++        key = (language, source, tuple(keep))
++        if key in self.cache:
++            self.cache.move_to_end(key)
++            return {**self.cache[key], "ms": 0, "cached": True}
++        started = time.perf_counter()
++
++        async def collect():
++            parts = []
++            async for delta in self.llm.stream_text(system_for(language), source):
++                parts.append(delta)
++            return "".join(parts)
++
++        try:
++            out = clean(await asyncio.wait_for(collect(), self.timeout))
++        except asyncio.CancelledError:
++            raise
++        except Exception as exc:
++            return {**base, "ms": round((time.perf_counter() - started) * 1000), "note": f"改写失败（{type(exc).__name__}），按普通话说"}
++        ms = round((time.perf_counter() - started) * 1000)
++        note = problem(source, out, keep)
++        if note:
++            return {**base, "ms": ms, "note": note + "，按普通话说"}
++        result = {**base, "text": out, "gloss": source if out != source else None, "ms": ms}
++        self.cache[key] = result
++        while len(self.cache) > 500:
++            self.cache.popitem(last=False)
++        return result
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_persona.py eat-what-backend/server/console_persona.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_persona.py	2026-10-18 05:49:34
++++ eat-what-backend/server/console_persona.py	2026-10-18 07:05:19
+@@ -34,9 +34,17 @@
+     return {"characterName": nickname, "nameSource": "generated", "nameBasis": f"根据商户名“{name}”生成会话昵称；不是官方角色或真实店主"}
+ 
+ 
+-def build_persona(shop, version):
++def build_persona(shop, version, override=None):
++    """`override` carries the frontend's own host for this shop ({"characterName"}): the figure on its stage already
++    has that name, so the persona speaks under it. Tone and interaction habits still follow this module's own
++    reading of the shop, so the tuned characters keep their voice under a different name."""
+     identity = choose_identity(shop)
+     name, category = shop["name"], shop["category"]
++    style_key = identity["characterName"]
++    if override and override.get("characterName"):
++        identity = {**identity, "characterName": override["characterName"], "nameSource": "frontend",
++                    "nameBasis": "前端为这家店生成的店主名（与舞台形象一致）；不是真实店主或官方角色",
++                    "backendCharacterName": style_key}
+     nickname = identity["characterName"]
+     tone, regional, basis = '机灵、好胜，直奔用户在意的点，不绕弯', '普通话，不指定地域', '没有明确地域资料'
+     if '自助' in category:
+@@ -86,7 +94,7 @@
+         '阿甬': ('轻声陈述具体落差，留一点余味，不喊阵', '从容接话，用具体体验反驳，像随口说却有分量'),
+         '小竹': ('省掉铺垫，干冷的一句点穿，少加问号', '惜字收住，不长篇申辩，不学别人吆喝'),
+         '阿灶': ('拿实在的一顿饭拆对手的空话，朴素直损', '掌柜式直给，围绕吃饭的具体事情说，不端着讲道理'),
+-    }.get(nickname, ('按自己的口吻直指有依据的具体问题', '顺着具体质疑接话，保持自己的节奏'))
++    }.get(style_key, ('按自己的口吻直指有依据的具体问题', '顺着具体质疑接话，保持自己的节奏'))
+     style.update(attack=interaction[0], respond=interaction[1])
+     display_name = next((short for short in ('聚聚乐', '赛百味', '甬悦柒鲜', '知竹') if short in name), name.split('·')[0])
+     summary = f'你是{name}的化身，叫{nickname}。这是一场抢客比赛，要尽力让用户选你。拿出自己的本事，抓住对手话里的漏洞，用事实争客，不客套端水。'
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_resume.py eat-what-backend/server/console_resume.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/console_resume.py	1970-01-01 08:00:00
++++ eat-what-backend/server/console_resume.py	2026-10-18 11:30:29
+@@ -0,0 +1,42 @@
++"""Resuming a debate: the rounds the frontend has already performed, as the heard history of a new session.
++
++The customer may leave the debate page and come back (a shop's details, a reload, a dropped connection). The new
++session's session.start then carries what the stage has already said, and the debate goes on from there instead of
++opening again. Only what the stage finished counts, so every restaurant round is presentation=ended.
++"""
++from __future__ import annotations
++
++import re
++
++ACCEPTED = 200  # rounds read from one session.start; introductions and cited sources are taken from all of them
++KEPT = 40  # rounds kept as recentDialogue, as a live session keeps them
++TEXT_LIMIT = 600
++EVIDENCE_LIMIT = 12
++TURN_ID = re.compile(r"^[\w:.\-]{1,64}$")
++
++
++def parse_history(value, ids, known_evidence):
++    """Performed rounds, oldest first: {turnId, restaurantId, text, evidenceIds} for restaurants in ids, and the
++    customer's words {role: "user", text}. Malformed items, restaurants not in ids, repeated turnIds and evidence
++    ids outside known_evidence are left out."""
++    if not isinstance(value, list):
++        return []
++    rounds, seen = [], set()
++    for item in value[-ACCEPTED:]:
++        if not isinstance(item, dict) or not isinstance(item.get("text"), str):
++            continue
++        text = item["text"].strip()[:TEXT_LIMIT]
++        if not text:
++            continue
++        if item.get("role") == "user":
++            rounds.append({"role": "user", "text": text})
++            continue
++        turn_id, sid, evidence = item.get("turnId"), item.get("restaurantId"), item.get("evidenceIds", [])
++        if (not isinstance(turn_id, str) or not TURN_ID.match(turn_id) or turn_id in seen
++                or not isinstance(sid, str) or sid not in ids or not isinstance(evidence, list)):
++            continue
++        seen.add(turn_id)
++        cited = [fid for fid in dict.fromkeys(x for x in evidence if isinstance(x, str)) if fid in known_evidence]
++        rounds.append({"turnId": turn_id, "restaurantId": sid, "text": text, "evidenceIds": cited[:EVIDENCE_LIMIT],
++                       "playedSamples": 0, "presentation": "ended", "introductionCompleted": True})
++    return rounds
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/livekit_worker.py eat-what-backend/server/livekit_worker.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/livekit_worker.py	2026-10-18 05:49:34
++++ eat-what-backend/server/livekit_worker.py	2026-10-18 07:05:19
+@@ -11,6 +11,7 @@
+ from .data import RestaurantRepository
+ from .orchestrator import MultiAgentOrchestrator
+ from .providers import CosyVoiceTTS, FasterWhisperSTT, OpenAICompatibleLLM
++from .providers.llm import make_llm
+ from .store import SessionStore
+ from .voice_turns import VoiceTurnController
+ from .providers.windows_tts import WindowsTTS
+@@ -64,7 +65,7 @@
+     repo = RestaurantRepository(settings.data_path)
+     store = SessionStore(settings.database_path, repo.ordered_ids())
+     llm = (
+-        OpenAICompatibleLLM(settings.llm_base_url, settings.llm_api_key, settings.llm_model, settings.llm_timeout_seconds)
++        make_llm(settings)
+         if settings.llm_ready
+         else None
+     )
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/providers/llm.py eat-what-backend/server/providers/llm.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/providers/llm.py	2026-10-18 05:49:34
++++ eat-what-backend/server/providers/llm.py	2026-10-18 06:14:25
+@@ -1,8 +1,10 @@
+ from __future__ import annotations
+ 
+ import json
++import logging
+ import os
+ import re
++import time
+ from urllib.parse import urlsplit
+ from typing import Any
+ 
+@@ -12,13 +14,21 @@
+ class OpenAICompatibleLLM:
+     """Small OpenAI-compatible adapter; credentials are read by config, never logged."""
+ 
+-    def __init__(self, base_url: str, api_key: str, model: str, timeout: float = 22.0):
++    def __init__(self, base_url: str, api_key: str, model: str, timeout: float = 22.0, reasoning_effort: str | None = None):
+         self.base_url = base_url.rstrip("/")
+         self.api_key = api_key
+         self.model = model
+         self.timeout = timeout
+         self.trust_env = os.getenv("LLM_TRUST_ENV", "1").strip().lower() not in {"0", "false", "no"}
++        self.reasoning_effort = (os.getenv("LLM_REASONING_EFFORT", "") if reasoning_effort is None else reasoning_effort).strip()
+ 
++    def _extras(self, payload: dict[str, Any]) -> dict[str, Any]:
++        if urlsplit(self.base_url).hostname == "api.deepseek.com":
++            payload["thinking"] = {"type": "disabled"}
++        elif self.reasoning_effort:
++            payload["reasoning_effort"] = self.reasoning_effort
++        return payload
++
+     @property
+     def configured(self) -> bool:
+         # Local OpenAI-compatible servers such as Ollama do not require a key.
+@@ -31,8 +41,7 @@
+             headers["Authorization"] = f"Bearer {self.api_key}"
+         payload = {"model": self.model, "messages": [{"role": "system", "content": system},
+                    {"role": "user", "content": user}], "temperature": 0.35, "max_tokens": 600, "stream": True}
+-        if urlsplit(self.base_url).hostname == "api.deepseek.com":
+-            payload["thinking"] = {"type": "disabled"}
++        self._extras(payload)
+         async with httpx.AsyncClient(timeout=self.timeout, trust_env=self.trust_env) as client:
+             async with client.stream("POST", f"{self.base_url}/chat/completions", headers=headers, json=payload) as response:
+                 response.raise_for_status()
+@@ -57,8 +66,7 @@
+             "max_tokens": 700,
+             "stream": False,
+         }
+-        if urlsplit(self.base_url).hostname == "api.deepseek.com":
+-            payload["thinking"] = {"type": "disabled"}
++        self._extras(payload)
+         headers = {"Content-Type": "application/json"}
+         if self.api_key:
+             headers["Authorization"] = f"Bearer {self.api_key}"
+@@ -72,3 +80,82 @@
+             raise ValueError("LLM did not return a JSON object")
+         return json.loads(match.group(0))
+ 
++
++
++class FallbackLLM:
++    """The configured provider first; a backup provider when it fails.
++
++    A failure is anything that stops the primary before its first output: unreachable, a rejected key, an unknown
++    model, a server error, a timeout. The backup then answers, and keeps answering for a cool-down before the primary
++    is tried again, so a dead provider does not add its timeout to every turn. A provider that fails after it has
++    started streaming is not swapped mid-sentence: that error goes to the caller as before. Keys are never logged.
++    """
++
++    def __init__(self, primary: OpenAICompatibleLLM, fallback: OpenAICompatibleLLM, cooldown: float = 300.0):
++        self.primary, self.fallback, self.cooldown = primary, fallback, cooldown
++        self.primary_failed_at: float | None = None
++        self.active = primary
++
++    @property
++    def configured(self) -> bool:
++        return self.primary.configured or self.fallback.configured
++
++    @property
++    def model(self) -> str:
++        return self.active.model
++
++    def _order(self):
++        resting = self.primary_failed_at is not None and time.monotonic() - self.primary_failed_at < self.cooldown
++        return [self.fallback, self.primary] if resting else [self.primary, self.fallback]
++
++    def _failed(self, provider, exc):
++        status = getattr(getattr(exc, "response", None), "status_code", None)
++        logging.getLogger(__name__).warning("llm_provider_failed %s", json.dumps({
++            "model": provider.model, "host": urlsplit(provider.base_url).hostname, "error": type(exc).__name__,
++            "status": status, "next": "fallback" if provider is self.primary else "primary"}, ensure_ascii=False))
++        if provider is self.primary:
++            self.primary_failed_at = time.monotonic()
++
++    async def stream_text(self, system: str, user: str):
++        order = self._order()
++        for index, provider in enumerate(order):
++            started = False
++            try:
++                async for delta in provider.stream_text(system, user):
++                    started = True
++                    yield delta
++                self.active = provider
++                if provider is self.primary:
++                    self.primary_failed_at = None
++                return
++            except Exception as exc:
++                if started or index == len(order) - 1:
++                    raise
++                self._failed(provider, exc)
++
++    async def complete_json(self, system: str, user: str) -> dict[str, Any]:
++        order = self._order()
++        for index, provider in enumerate(order):
++            try:
++                result = await provider.complete_json(system, user)
++                self.active = provider
++                if provider is self.primary:
++                    self.primary_failed_at = None
++                return result
++            except Exception as exc:
++                if index == len(order) - 1:
++                    raise
++                self._failed(provider, exc)
++        raise RuntimeError("no LLM provider")
++
++
++def make_llm(settings):
++    """The primary LLM_* provider, with LLM_FALLBACK_* behind it when both are set; either alone works too."""
++    primary = (OpenAICompatibleLLM(settings.llm_base_url, settings.llm_api_key, settings.llm_model, settings.llm_timeout_seconds)
++               if settings.llm_base_url and settings.llm_model else None)
++    fallback = (OpenAICompatibleLLM(settings.llm_fallback_base_url, settings.llm_fallback_api_key, settings.llm_fallback_model,
++                                    settings.llm_timeout_seconds, reasoning_effort=settings.llm_fallback_reasoning_effort)
++                if settings.llm_fallback_base_url and settings.llm_fallback_model else None)
++    if primary and fallback:
++        return FallbackLLM(primary, fallback, settings.llm_fallback_cooldown)
++    return primary or fallback
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/providers/macos_tts.py eat-what-backend/server/providers/macos_tts.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/providers/macos_tts.py	1970-01-01 08:00:00
++++ eat-what-backend/server/providers/macos_tts.py	2026-10-18 06:11:23
+@@ -0,0 +1,81 @@
++"""Offline macOS system voices through `say`: the realtime TTS for Macs without an NVIDIA GPU.
++
++The delivered TTS is CosyVoice 3 (scripts/cosyvoice_service.py). On Apple Silicon that service also runs on the
++GPU through MPS, but on an M1 Pro it is about 7x slower than real time, too slow to voice a live debate. `say`
++renders faster than real time on the CPU. Each clause is rendered to 24 kHz s16le PCM and streamed in 20 ms frames,
++and a stream that is cancelled (a new epoch) kills the render in progress.
++"""
++from __future__ import annotations
++
++import asyncio
++import os
++import tempfile
++import wave
++from pathlib import Path
++
++from .tts import _clauses
++
++# Installed Mandarin voices (macOS 14+; `say -v '?'` lists them). Several share an English name with voices in
++# other languages, so the locale suffix is part of the name.
++CN = "（中文（中国大陆）)"
++FEMALE = ["Tingting", "Sandy (中文（中国大陆）)", "Shelley (中文（中国大陆）)", "Flo (中文（中国大陆）)"]
++MALE = ["Reed (中文（中国大陆）)", "Eddy (中文（中国大陆）)", "Rocko (中文（中国大陆）)"]
++OLD = {"female": "Grandma (中文（中国大陆）)", "male": "Grandpa (中文（中国大陆）)"}
++# The delivered voice ids (CosyVoice reference speakers) map onto the nearest system voice.
++ALIASES = {"rong": "Tingting", "hua": "Reed (中文（中国大陆）)", "pierre": "Eddy (中文（中国大陆）)", "host": "Tingting"}
++
++
++class MacOSTTS:
++    name = "macos-say"
++    sample_rate = 24000
++
++    def __init__(self, rate: int | None = None):
++        self.rate = int(rate or os.getenv("MACOS_TTS_RATE", "220"))
++        self.warmed: set[str] = set()
++
++    @staticmethod
++    def voice_name(voice: str) -> str:
++        return ALIASES.get(voice, voice)
++
++    async def _render(self, text: str, voice: str) -> bytes:
++        fd, path = tempfile.mkstemp(suffix=".wav")
++        os.close(fd)
++        # Text goes in on stdin, never as an argument.
++        process = await asyncio.create_subprocess_exec(
++            "say", "-v", self.voice_name(voice), "-r", str(self.rate), "--file-format=WAVE",
++            "--data-format=LEI16@24000", "-o", path, "-f", "-",
++            stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE)
++        try:
++            _, error = await asyncio.wait_for(process.communicate(text.encode("utf-8")), timeout=30)
++            if process.returncode != 0:
++                raise RuntimeError(f"say failed: {error.decode('utf-8', errors='replace')[:300]}")
++            with wave.open(path, "rb") as audio:
++                if audio.getframerate() != self.sample_rate or audio.getnchannels() != 1 or audio.getsampwidth() != 2:
++                    raise RuntimeError("say returned an unexpected audio format")
++                return audio.readframes(audio.getnframes())
++        except BaseException:
++            if process.returncode is None:
++                process.kill()
++                await process.wait()
++            raise
++        finally:
++            Path(path).unlink(missing_ok=True)
++
++    async def warm(self, voices) -> None:
++        """A voice's first render loads it (seconds); pay that before the debate needs it."""
++        for voice in voices:
++            name = self.voice_name(voice)
++            if name not in self.warmed:
++                await self._render("好。", voice)
++                self.warmed.add(name)
++
++    async def stream(self, text, voice):
++        frame = self.sample_rate // 50 * 2
++        for clause in _clauses(text):
++            pcm = await self._render(clause, voice)
++            self.warmed.add(self.voice_name(voice))
++            for offset in range(0, len(pcm), frame):
++                yield pcm[offset:offset + frame], self.sample_rate
++            pause = bytes(int(self.sample_rate * 0.06) * 2)
++            for offset in range(0, len(pause), frame):
++                yield pause[offset:offset + frame], self.sample_rate
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/providers/stt_transformers.py eat-what-backend/server/providers/stt_transformers.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/providers/stt_transformers.py	1970-01-01 08:00:00
++++ eat-what-backend/server/providers/stt_transformers.py	2026-10-18 06:44:42
+@@ -0,0 +1,96 @@
++"""Whisper through Hugging Face transformers, on Apple Silicon's GPU (MPS) or the CPU.
++
++The delivered STT is faster-whisper (CTranslate2), which runs on NVIDIA GPUs or the CPU but not on Apple's GPU. This
++provider is the Mac alternative behind the same interface (WHISPER_BACKEND=transformers): WHISPER_MODEL is a local
++transformers checkpoint, e.g. the openai/whisper-large-v3-turbo snapshot already in a Hugging Face cache, and
++WHISPER_DEVICE is mps (default when available) or cpu. Like the delivered adapter it transcribes once, at the end of
++the user's turn (no partial results).
++"""
++from __future__ import annotations
++
++import asyncio
++import os
++import re
++import threading
++from typing import Iterable
++
++
++VOCABULARY = "预算、人均、过敏、不吃辣、不能吃辣、安静、踢走、换一家。"
++
++
++def plain_hint(initial_prompt: str | None) -> str:
++    """Whisper copies a hint's punctuation: the realtime console's "店名（角色）、…" list made it answer in
++    full-width brackets and cut the last character. Names as a plain list, plus the words customers use here
++    (it also turned 不吃辣 into 不吃啦 without them), transcribe cleanly."""
++    words = [w for w in re.findall(r"[\u4e00-\u9fffA-Za-z0-9·]+", initial_prompt or "") if w not in {"餐厅和角色", "餐厅", "角色"}]
++    names = "、".join(dict.fromkeys(words))[:120]
++    return (f"餐厅：{names}。" if names else "") + VOCABULARY
++
++
++class TransformersWhisperSTT:
++    def __init__(self, model_path: str, device: str = "mps"):
++        self.model_path = os.path.expanduser(model_path)
++        self.device = device
++        self.model = None
++        self.processor = None
++        self.dtype = None
++        self.error: str | None = None
++        self.lock = threading.RLock()
++
++    @property
++    def name(self) -> str:
++        return f"transformers-whisper ({os.path.basename(self.model_path.rstrip('/')) or self.model_path}, {self.device})"
++
++    def load(self) -> None:
++        with self.lock:
++            if self.model is not None:
++                return
++            try:
++                os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
++                import torch
++                from transformers import WhisperForConditionalGeneration, WhisperProcessor
++
++                if self.device == "mps" and not torch.backends.mps.is_available():
++                    self.device = "cpu"
++                self.dtype = torch.float16 if self.device != "cpu" else torch.float32
++                self.processor = WhisperProcessor.from_pretrained(self.model_path)
++                model = WhisperForConditionalGeneration.from_pretrained(self.model_path, torch_dtype=self.dtype)
++                self.model = model.to(self.device).eval()
++                # The first pass on the GPU sets up its kernels (seconds); do it before anyone is waiting.
++                import numpy as np
++                self.transcribe_array(np.zeros(16000, dtype="float32"))
++            except Exception as exc:
++                self.error = f"{type(exc).__name__}: {exc}"
++                raise
++
++    def transcribe_array(self, audio, initial_prompt: str | None = None) -> str:
++        """16 kHz mono float32 samples to text."""
++        import torch
++
++        with self.lock, torch.inference_mode():
++            features = self.processor(audio, sampling_rate=16000, return_tensors="pt").input_features
++            features = features.to(self.device, self.dtype)
++            kwargs = {"language": "zh", "task": "transcribe", "max_new_tokens": 160}
++            hint = plain_hint(initial_prompt)
++            kwargs["prompt_ids"] = torch.tensor(self.processor.get_prompt_ids(hint), device=self.device)
++            ids = self.model.generate(features, **kwargs)
++            text = self.processor.batch_decode(ids, skip_special_tokens=True)[0].strip()
++            # Some transformers versions return the prompt in front of the transcript.
++            if text.startswith(hint):
++                text = text[len(hint):].strip()
++            return text.replace("\ufffd", "").strip()
++
++    async def transcribe_frames(self, frames: Iterable[object], initial_prompt: str | None = None) -> str:
++        if self.model is None:
++            await asyncio.to_thread(self.load)
++
++        def run() -> str:
++            import numpy as np
++
++            chunks = [bytes(frame.data) for frame in frames]
++            if not chunks:
++                return ""
++            audio = np.frombuffer(b"".join(chunks), dtype="<i2").astype("float32") / 32768.0
++            return self.transcribe_array(audio, initial_prompt)
++
++        return await asyncio.to_thread(run)
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/realtime_console.py eat-what-backend/server/realtime_console.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/realtime_console.py	2026-10-18 05:49:34
++++ eat-what-backend/server/realtime_console.py	2026-10-18 12:31:37
+@@ -23,13 +23,17 @@
+ from .console_persona import speech_system, introduction_end, strip_repeated_setup, style_context, speech_style_violations
+ from .console_preferences import initial_preferences, update_preferences
+ from .console_attack_memory import criticism_points, used_attack_points, repeated_attack_points, explicit_review_followup
+-from .providers.llm import OpenAICompatibleLLM
++from .providers.llm import make_llm
+ from .providers.windows_tts import WindowsTTS
+-from .providers.tts import CosyVoiceTTS
++from .providers.tts import CosyVoiceTTS, NullTTS
+ from .providers.cosyvoice_http import CosyVoiceHTTP
++from .providers.macos_tts import MacOSTTS
++from .voices import assign_voices, parse_characters
++from .console_localize import Localizer, dialect_of
++from .console_resume import parse_history, KEPT
+ 
+ router = APIRouter()
+-catalog = ConsoleData(ROOT / "data/latest")
++catalog = ConsoleData(settings.console_data_dir)
+ speech_lock = asyncio.Lock()
+ speech_resources = None
+ 
+@@ -65,7 +69,12 @@
+         if speech_resources is None:
+             def build():
+                 vad = silero.VAD.load(min_speech_duration=0.12, min_silence_duration=0.55, prefix_padding_duration=0.35, force_cpu=True)
+-                stt = FasterWhisperSTT(settings.whisper_model, settings.whisper_device, settings.whisper_compute_type)
++                if settings.whisper_backend == "transformers":
++                    # Apple Silicon: Whisper on the GPU through MPS (providers/stt_transformers.py).
++                    from .providers.stt_transformers import TransformersWhisperSTT
++                    stt = TransformersWhisperSTT(settings.whisper_model, settings.whisper_device)
++                else:
++                    stt = FasterWhisperSTT(settings.whisper_model, settings.whisper_device, settings.whisper_compute_type)
+                 stt.load()
+                 return rtc, vad, stt
+             speech_resources = await asyncio.to_thread(build)
+@@ -86,6 +95,9 @@
+         self.preferences = {}
+         self.initial_preferences = {}
+         self.personas = {}
++        # The frontend's hosts by restaurant id ({characterName, gender, age}) and the voice each speaks with.
++        self.characters = {}
++        self.voices = {}
+         self.introduced = set()
+         self.history = []
+         self.used = set()
+@@ -114,11 +126,21 @@
+         self.allow_prefetch = False
+         self.last_completed_turn = None
+         self.playbacks = {}
+-        self.llm = OpenAICompatibleLLM(settings.llm_base_url, settings.llm_api_key, settings.llm_model, settings.llm_timeout_seconds) if settings.llm_ready else None
+-        self.tts = (CosyVoiceHTTP(os.getenv('COSYVOICE_URL', 'http://127.0.0.1:8772')) if settings.tts_provider == 'cosyvoice-http'
+-                    else WindowsTTS() if settings.tts_provider == 'windows'
++        self.llm = make_llm(settings) if settings.llm_ready else None
++        # Regional hosts say their verified Mandarin line in their own dialect (console_localize).
++        self.localizer = Localizer(self.llm)
++        provider = settings.tts_provider
++        self.tts = (CosyVoiceHTTP(os.getenv('COSYVOICE_URL', 'http://127.0.0.1:8772')) if provider == 'cosyvoice-http'
++                    else WindowsTTS() if provider == 'windows'
++                    # Macs without an NVIDIA GPU: system voices, faster than real time (providers/macos_tts.py).
++                    else MacOSTTS() if provider == 'macos'
++                    else NullTTS() if provider in {'none', 'off'}
+                     else CosyVoiceTTS(Path(os.getenv('COSYVOICE_DIR', str(ROOT / 'runtime/CosyVoice'))), ROOT / 'voices'))
+ 
++    def engine(self):
++        """The model answering now (the backup provider's once the primary has failed), or rules without a model."""
++        return getattr(self.llm, "model", settings.llm_model) if self.llm else "rules"
++
+     def spawn(self, coro):
+         task = asyncio.create_task(coro)
+         self.tasks.add(task)
+@@ -147,11 +169,11 @@
+     async def model_stream(self, actor, stage, system, payload):
+         run_id = "w-" + uuid.uuid4().hex[:8]
+         speculative = bool(payload.get("SessionView", {}).get("speculative"))
+-        await self.workflow(run_id, actor, stage, "running", detail=("预生成 · " if speculative else "") + "正在请求模型，等待首个输出", model=settings.llm_model,
++        await self.workflow(run_id, actor, stage, "running", detail=("预生成 · " if speculative else "") + "正在请求模型，等待首个输出", model=self.engine(),
+                             speculative=speculative,
+                             prefetchSourceTurnId=payload.get("SessionView", {}).get("pendingPlayback", {}).get("turnId"),
+                             systemPrompt=system, input=payload)
+-        await self.trace("llm.request", {"runId": run_id, "actor": actor, "model": settings.llm_model,
++        await self.trace("llm.request", {"runId": run_id, "actor": actor, "model": self.engine(),
+                                         "systemPrompt": system, "input": payload})
+         output = ""
+         try:
+@@ -177,8 +199,8 @@
+                 "characters": {sid: {"characterName": self.personas[sid]["characterName"], "nameSource": self.personas[sid]["nameSource"]} for sid in self.ids if sid in self.personas},
+                 "currentTurn": restaurant_directive(self.current) if self.current else None, "discussedEvidenceIds": sorted(self.used),
+                 "userSpeaking": self.speaking, "status": "running" if self.running else "paused",
+-                "engine": settings.llm_model if self.llm else "rules", "ttsProvider": self.tts.name,
+-                "coordinatorEngine": settings.llm_model if self.llm else "rules",
++                "engine": self.engine(), "ttsProvider": self.tts.name,
++                "coordinatorEngine": self.engine(),
+                 "pipelinePolicy": "one_turn_ahead; commit_after_playback; cancel_on_epoch_or_revision_change",
+                 "playbackProtocol": {"reportIntervalMs": 100, "sampleClock": "audio_output", "historyPolicy": "completed_short_units_only"},
+                 "verification": "引用归属与数值检查；不代表完整语义核验"}
+@@ -229,12 +251,22 @@
+             'removedRestaurantIds': [sid for sid in previous_ids if sid not in self.ids]})
+ 
+     async def load_personas(self):
+-        self.personas.update({sid: catalog.persona(sid) for sid in self.ids})
++        self.personas.update({sid: catalog.persona(sid, self.characters.get(sid)) for sid in self.ids})
++        self.voices = assign_voices(self.tts.name, self.ids, self.characters)
+         for sid in list(self.ids):
+             await self.trace('data.read', {'restaurant': catalog.shops[sid], 'evidenceCount': len(catalog.facts[sid]), 'dataVersion': catalog.version})
+             await self.trace('persona.ready', {'persona': self.personas[sid]})
+ 
+-    async def start(self, ids, preferences=None, reason='session.start'):
++    async def warm_voices(self):
++        try:
++            await self.tts.warm(set(self.voices.values()))
++        except Exception as exc:
++            await self.trace('tts.warm_failed', {'reason': type(exc).__name__})
++
++    def voice_for(self, sid):
++        return self.voices.get(sid) or ["rong", "hua", "pierre"][self.ids.index(sid) % 3]
++
++    async def start(self, ids, preferences=None, reason='session.start', history=None):
+         preferences = initial_preferences(preferences)
+         validate_restaurant_ids(ids)
+         previous_ids = list(self.ids)
+@@ -251,11 +283,39 @@
+         self.used = set()
+         self.index = 0
+         self.query = ""
++        # Rounds the frontend already performed: the debate goes on from them instead of opening again.
++        resumed = self.resume(history) if history else []
+         self.revision += 1
+         await self.load_personas()
++        if resumed:
++            await self.trace('session.resumed', {'rounds': sum(1 for h in resumed if h.get('restaurantId')),
++                                                 'userLines': sum(1 for h in resumed if h.get('role') == 'user'),
++                                                 'received': len(history) if isinstance(history, list) else 0,
++                                                 'introducedRestaurantIds': sorted(self.introduced),
++                                                 'discussedEvidenceIds': sorted(self.used), 'pendingQuestion': self.query})
+         await self.publish_restaurants(reason, previous_ids)
+         await self.state()
+ 
++    def resume(self, history):
++        """session.start history (console_resume.parse_history) becomes this session's heard history.
++
++        As a live session would have recorded them: restaurants that have spoken are introduced, the sources they
++        cited are discussed, the customer's words update the preferences, and a question they asked last, which no
++        round has answered yet, is still the one to answer.
++        """
++        rounds = parse_history(history, self.ids, {f["id"] for sid in self.ids for f in catalog.facts[sid]})
++        spoken = [item for item in rounds if item.get("restaurantId")]
++        self.introduced = {item["restaurantId"] for item in spoken}
++        self.used = {fid for item in spoken for fid in item["evidenceIds"]}
++        self.index = len(spoken)
++        for item in rounds:
++            if item.get("role") == "user":
++                self.preferences = update_preferences(self.preferences, item["text"])
++        if rounds and rounds[-1].get("role") == "user":
++            self.query = rounds[-1]["text"]
++        self.history = rounds[-KEPT:]
++        return rounds
++
+     async def update_restaurants(self, ids):
+         validate_restaurant_ids(ids)
+         previous_ids = list(self.ids)
+@@ -411,7 +471,7 @@
+                         raise
+                     payload = {**payload, "validation": {"error": str(exc), "previousOutput": raw,
+                                                          **diagnostic, 'evidenceChoices': evidence_choices}}
+-            await self.trace("coordinator.validated", {"engine": settings.llm_model, "proposal": proposal})
++            await self.trace("coordinator.validated", {"engine": self.engine(), "proposal": proposal})
+             if proposal.get('ignoredEvidence'):
+                 await self.trace('coordinator.evidence_filtered', {'ignoredEvidence': proposal['ignoredEvidence'],
+                                                                  'evidenceIds': proposal['evidenceIds'], 'continued': True})
+@@ -481,7 +541,7 @@
+         introduces = sid not in known_introductions
+         plan = {**proposal, "turnId": turn_id, "speaker": persona["characterName"], "characterName": persona["characterName"],
+                 "restaurantName": catalog.shops[sid]["name"], "introduce": introduces}
+-        await self.trace("coordinator.plan", {"plan": plan, "speculative": bool(context), "engine": settings.llm_model if self.llm else "rules"})
++        await self.trace("coordinator.plan", {"plan": plan, "speculative": bool(context), "engine": self.engine()})
+         await self.trace("agent.context", {"restaurantId": sid, "persona": self.personas[sid], "SessionView": view, "TurnPlan": restaurant_directive(plan), "evidence": facts})
+         segments = []
+         final_evidence = {}
+@@ -538,16 +598,33 @@
+             if last_check:
+                 raise SpeechValidationError(turn_id, last_check)
+             raise ValueError('餐厅未输出可解析的发言对象')
++        await self.speak_dialect(sid, segments, persona, introduces, turn_id)
+         if introduces:
+             segments[0]['isIntroduction'] = True
+             await self.trace("persona.introduction", {"restaurantId": sid, "characterName": persona["characterName"],
+                                                       "nameSource": persona["nameSource"], "text": segments[0]['text'], "mode": 'model-generated', "speculative": bool(context)})
+         for index, segment in enumerate(segments):
+             segment["segmentId"] = f"{turn_id}-s{index}"
++        glossed = any(s.get("gloss") for s in segments)
+         return {"epoch": epoch, "revision": revision, "plan": plan, "segments": segments,
+                 "text": "".join(s["text"] for s in segments), "evidence": list(final_evidence.values()), "introducesCharacter": introduces,
++                **({"gloss": "".join(s.get("gloss") or s["text"] for s in segments)} if glossed else {}),
+                 "introductionCharacterEnd": introduction_end(segments[0]['text'], persona) if introduces else None}
+ 
++    async def speak_dialect(self, sid, segments, persona, introduces, turn_id):
++        """A regional host says each verified segment in its dialect; the Mandarin stays on as the segment's gloss.
++        The checks above ran on the Mandarin, and a rewrite that loses a number or a name is not used."""
++        language = (self.characters.get(sid) or {}).get("language")
++        if not dialect_of(language):
++            return
++        keep = (persona["characterName"], persona["displayRestaurantName"]) if introduces else (persona["characterName"],)
++        for index, segment in enumerate(segments):
++            result = await self.localizer.localize(segment["text"], language, keep if index == 0 else ())
++            await self.trace("dialect.rewrite", {"turnId": turn_id, "restaurantId": sid, "language": language, "dialect": dialect_of(language),
++                                                 "source": segment["text"], "text": result["text"], "ms": result["ms"], "note": result.get("note")})
++            if result.get("gloss"):
++                segment["gloss"], segment["text"] = segment["text"], result["text"]
++
+     def refresh_heard(self, record, ended=False):
+         item = record["history"]
+         if ended and not record["audioEnabled"]:
+@@ -646,6 +723,7 @@
+                                         'characterName': plan['characterName'], 'restaurantName': plan['restaurantName'],
+                                         'speechAct': plan['speechAct'], 'discussionDimension': plan.get('discussionDimension', '综合'),
+                                         'text': prepared['text'], 'evidence': prepared['evidence'], 'audioEnabled': self.audio_on,
++                                        **({'gloss': prepared['gloss'], 'language': (self.characters.get(sid) or {}).get('language')} if prepared.get('gloss') else {}),
+                                         'note': '控制台完整台词预览；音频尚未播完，不代表已听历史'})
+         await self.trace('latency.text', {'firstTextMs': round((time.perf_counter() - t0) * 1000)})
+         output_samples, chunk_seq = 0, 0
+@@ -660,7 +738,7 @@
+                 for unit_text in speech_units(text):
+                     unit = {"text": unit_text, "segmentId": segment_id, "evidenceIds": segment["evidenceIds"], "sampleStart": output_samples, "sampleEnd": None}
+                     record["units"].append(unit)
+-                    async for pcm, sr in self.tts.stream(unit_text, ["rong", "hua", "pierre"][self.ids.index(sid) % 3]):
++                    async for pcm, sr in self.tts.stream(unit_text, self.voice_for(sid)):
+                         if epoch != self.epoch:
+                             return False
+                         if not audio_started:
+@@ -701,7 +779,7 @@
+                                  "characterName": plan["characterName"], "restaurantName": plan["restaurantName"],
+                                  'speechAct': plan['speechAct'], 'discussionDimension': plan.get('discussionDimension', '综合'),
+                                  "targetIds": [plan["targetRestaurantId"]] if plan.get("targetRestaurantId") else [],
+-                                 "replyTo": plan.get("replyTo", []), "text": prepared["text"],
++                                 "replyTo": plan.get("replyTo", []), "text": prepared["text"], **({"gloss": prepared["gloss"]} if prepared.get("gloss") else {}),
+                                  "segments": prepared["segments"], "evidence": prepared["evidence"]})
+         self.history = self.history[-40:]
+         await self.emit("turn", {"phase": "generated", **plan, "audio": audio_started})
+@@ -709,9 +787,9 @@
+         if not audio_started:
+             self.start_prefetch(prepared)
+         try:
+-            await asyncio.wait_for(self.ack, timeout=12)
++            await asyncio.wait_for(self.ack, timeout=settings.playback_ack_timeout)
+         except TimeoutError as exc:
+-            raise TimeoutError('音频已发送，但12秒内未收到前端播放结束回执；请检查播放器连接') from exc
++            raise TimeoutError(f'音频已发送，但{settings.playback_ack_timeout:g}秒内未收到前端播放结束回执；请检查播放器连接') from exc
+         record["playedSamples"] = output_samples
+         record["finalReport"].set()
+         self.refresh_heard(record, ended=True)
+@@ -846,7 +924,8 @@
+     async def mic_start(self, stream_id):
+         await self.mic_stop()
+         generation = self.mic_generation
+-        await self.trace("stt.loading", {"device": settings.whisper_device, "model": "faster-whisper-small", "interimSupported": False})
++        await self.trace("stt.loading", {"device": settings.whisper_device, "backend": settings.whisper_backend,
++                                         "model": os.path.basename(str(settings.whisper_model).rstrip('/')), "interimSupported": False})
+         rtc, vad, stt = await load_speech()
+         if self.closed or generation != self.mic_generation:
+             return
+@@ -929,11 +1008,18 @@
+             self.commands.add(cid)
+         kind, data = body.get("type"), body.get("data", {})
+         if kind in {"session.start", "restaurants.update"}:
++            # The frontend may describe its own host for each restaurant; see voices.parse_characters.
++            characters = parse_characters(data.get('characters'), data.get('restaurantIds', []))
+             if kind == "session.start":
+-                self.audio_on = bool(data.get("audioEnabled", True))
+-                await self.start(data.get("restaurantIds", []), data.get('preferences'))
++                self.audio_on = bool(data.get("audioEnabled", True)) and self.tts.name != 'none'
++                self.characters = characters
++                # history: the rounds already performed, when the customer comes back to a debate (console_resume.py).
++                await self.start(data.get("restaurantIds", []), data.get('preferences'), history=data.get('history'))
+             else:
++                self.characters.update(characters)
+                 await self.update_restaurants(data.get('restaurantIds', []))
++            if self.audio_on and hasattr(self.tts, 'warm'):
++                self.spawn(self.warm_voices())
+         elif kind == "user.text":
+             await self.input_text(str(data.get("text", "")))
+         elif kind == "playback":
+@@ -954,8 +1040,13 @@
+             elif action == "reset":
+                 await self.start(self.initial_ids, self.initial_preferences, reason='reset')
+             elif action == "audio":
+-                await self.interrupt("audio_setting")
+-                self.audio_on = bool(data.get("enabled"))
++                # deferred: the turn on stage keeps its sound setting and the change starts with the next turn,
++                # so muting never cuts a line short (the frontend silences its playback at once).
++                if not data.get("deferred"):
++                    await self.interrupt("audio_setting")
++                self.audio_on = bool(data.get("enabled")) and self.tts.name != 'none'
++                if self.audio_on and hasattr(self.tts, 'warm'):
++                    self.spawn(self.warm_voices())
+             else:
+                 raise ValueError("未知控制操作")
+         else:
+@@ -987,7 +1078,7 @@
+     await ws.accept()
+     session = ConsoleSession(ws)
+     try:
+-        await session.emit("state", {"status": "ready", "engine": settings.llm_model if session.llm else "rules",
++        await session.emit("state", {"status": "ready", "engine": session.engine(),
+                                      "ttsProvider": session.tts.name, "micFormat": {"sampleRate": 16000, "channels": 1, "encoding": "pcm_s16le"}})
+         while True:
+             message = await ws.receive()
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/voices.py eat-what-backend/server/voices.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/server/voices.py	1970-01-01 08:00:00
++++ eat-what-backend/server/voices.py	2026-10-18 12:20:36
+@@ -0,0 +1,64 @@
++"""A voice per restaurant, from the frontend's description of its host (gender, age, language).
++
++Without that description the delivered rotation stays (rong, hua, pierre by list position). With it, each host gets
++a voice of its gender and, where the provider has enough, one nobody else on stage is using. A host who speaks
++粤语 (console_localize) gets the system's Cantonese voice when it has one of that host's gender: macOS has a female one.
++"""
++from __future__ import annotations
++
++import re
++
++from .console_localize import LANGUAGES
++from .providers.macos_tts import FEMALE, MALE, OLD
++
++ROTATION = ["rong", "hua", "pierre"]
++# CosyVoice and the Windows voices both take the delivered reference ids.
++POOLS = {
++    "macos-say": {"female": FEMALE, "male": MALE, "old_female": [OLD["female"]], "old_male": [OLD["male"]]},
++    "default": {"female": ["rong"], "male": ["hua", "pierre"], "old_female": [], "old_male": []},
++}
++# Voices for a language other than Mandarin, by provider and gender.
++DIALECT_VOICES = {"macos-say": {("yue", "female"): "Sinji"}}
++NAME = re.compile(r"^[^\x00-\x1f\x7f]{1,12}$")
++
++
++def parse_characters(value, ids):
++    """The frontend's hosts, by restaurant id: {characterName?, gender?, age?, language?}. Anything malformed is left out;
++    `language` is kept only for a dialect the localizer rewrites into."""
++    if not isinstance(value, dict):
++        return {}
++    characters = {}
++    for sid, item in value.items():
++        if sid not in ids or not isinstance(item, dict):
++            continue
++        entry = {}
++        name = item.get("characterName")
++        if isinstance(name, str) and NAME.match(name.strip()):
++            entry["characterName"] = name.strip()
++        if item.get("gender") in {"female", "male"}:
++            entry["gender"] = item["gender"]
++        if item.get("age") in {"young", "middle", "old"}:
++            entry["age"] = item["age"]
++        if item.get("language") in LANGUAGES:
++            entry["language"] = item["language"]
++        if entry:
++            characters[sid] = entry
++    return characters
++
++
++def assign_voices(provider, ids, characters):
++    pools = POOLS.get(provider, POOLS["default"])
++    voices, used = {}, set()
++    for index, sid in enumerate(ids):
++        character = characters.get(sid, {})
++        gender = character.get("gender")
++        if gender not in {"female", "male"}:
++            voices[sid] = ROTATION[index % len(ROTATION)]
++            continue
++        older = pools["old_" + gender] if character.get("age") == "old" else []
++        dialect = DIALECT_VOICES.get(provider, {}).get((character.get("language"), gender))
++        candidates = [*([dialect] if dialect else []), *older, *pools[gender]] or ROTATION
++        voice = next((v for v in candidates if v not in used), candidates[index % len(candidates)])
++        voices[sid] = voice
++        used.add(voice)
++    return voices
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/start_cosyvoice_mac.sh eat-what-backend/start_cosyvoice_mac.sh
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/start_cosyvoice_mac.sh	1970-01-01 08:00:00
++++ eat-what-backend/start_cosyvoice_mac.sh	2026-10-18 06:24:29
+@@ -0,0 +1,13 @@
++#!/usr/bin/env bash
++# CosyVoice 3 on Apple Silicon (MPS), reusing an existing local install instead of a second download:
++# the uv environment ~/.venvs/cosyvoice311 (Python 3.11, torch 2.3.1) and the weights in
++# ~/tts/CosyVoice/pretrained_models/Fun-CosyVoice3-0.5B (same files as config/cosyvoice-model-manifest.json).
++# Measured on an M1 Pro: about 7x slower than real time, so it suits pre-rendered audio, not a live debate.
++# To use it live anyway, set TTS_PROVIDER=cosyvoice-http in .env.local and start this first.
++set -euo pipefail
++cd "$(dirname "$0")"
++PY="${COSYVOICE_PYTHON:-$HOME/.venvs/cosyvoice311/bin/python}"
++export COSYVOICE_DEVICE="${COSYVOICE_DEVICE:-mps}"
++export COSYVOICE_MODEL_DIR="${COSYVOICE_MODEL_DIR:-$HOME/tts/CosyVoice/pretrained_models/Fun-CosyVoice3-0.5B}"
++export MODELSCOPE_CACHE="${MODELSCOPE_CACHE:-$HOME/.cache/modelscope}"
++exec "$PY" scripts/cosyvoice_service.py
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/start_mac.sh eat-what-backend/start_mac.sh
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/start_mac.sh	1970-01-01 08:00:00
++++ eat-what-backend/start_mac.sh	2026-10-18 06:24:29
+@@ -0,0 +1,16 @@
++#!/usr/bin/env bash
++# macOS (Apple Silicon) launcher for the multi-agent backend behind the 饭店请就位 frontend.
++#   ./start_mac.sh            WebSocket API on 127.0.0.1:8771 (/api/realtime), debug console /console.html
++#   ./start_mac.sh --check    load everything and report readiness, without serving
++# Settings: .env.local (TTS_PROVIDER=macos, WHISPER_BACKEND=transformers on the Apple GPU, keys read in place
++# from the frontend's env files). data/full holds all 66 shops the frontend shows; the delivered tests keep
++# using the 7-shop data/latest snapshot.
++set -euo pipefail
++cd "$(dirname "$0")"
++if [ ! -x .venv/bin/python ]; then
++  echo "Create the environment first: uv venv --python 3.11 .venv && uv pip install --python .venv/bin/python -r requirements-handoff.txt torch transformers" >&2
++  exit 1
++fi
++export CONSOLE_DATA_DIR="${CONSOLE_DATA_DIR:-data/full}"
++[ -d "$CONSOLE_DATA_DIR" ] || export CONSOLE_DATA_DIR=data/latest
++exec .venv/bin/python scripts/run_backend.py "$@"
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/tests/test_console_localize.py eat-what-backend/tests/test_console_localize.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/tests/test_console_localize.py	1970-01-01 08:00:00
++++ eat-what-backend/tests/test_console_localize.py	2026-10-18 12:21:22
+@@ -0,0 +1,77 @@
++"""Regional hosts: the verified Mandarin line rewritten into their dialect, the Mandarin kept as its gloss."""
++import asyncio
++import unittest
++
++from server.console_localize import Localizer, clean, dialect_of, problem, system_for
++from server.voices import assign_voices, parse_characters
++
++
++class FakeLLM:
++    def __init__(self, reply, delay=0.0):
++        self.reply, self.delay, self.calls = reply, delay, []
++
++    async def stream_text(self, system, user):
++        self.calls.append((system, user))
++        if self.delay:
++            await asyncio.sleep(self.delay)
++        for index in range(0, len(self.reply), 4):
++            yield self.reply[index:index + 4]
++
++
++def run(coro):
++    return asyncio.run(coro)
++
++
++class LocalizerTests(unittest.TestCase):
++    def test_a_regional_host_speaks_dialect_with_the_mandarin_as_gloss(self):
++        llm = FakeLLM("四川话：来我屋头嘛，人均才85，巴适得很！")
++        localizer = Localizer(llm)
++        result = run(localizer.localize("来我家吧，人均才85，很舒服！", "sc", ("蓉姐",)))
++        self.assertEqual(result["text"], "来我屋头嘛，人均才85，巴适得很！")
++        self.assertEqual(result["gloss"], "来我家吧，人均才85，很舒服！")
++        # The prompt is agent-studio's, with the film's pairs as examples.
++        self.assertIn("四川话", llm.calls[0][0])
++        self.assertIn("屋头", llm.calls[0][0])
++        # The same line again is not rewritten twice.
++        self.assertTrue(run(localizer.localize("来我家吧，人均才85，很舒服！", "sc", ("蓉姐",))).get("cached"))
++        self.assertEqual(len(llm.calls), 1)
++
++    def test_a_rewrite_that_loses_a_number_or_a_name_is_not_used(self):
++        lost_number = run(Localizer(FakeLLM("嚟饮早茶啦，好平㗎！")).localize("来饮早茶，人均45元！", "yue"))
++        self.assertEqual((lost_number["text"], lost_number["gloss"]), ("来饮早茶，人均45元！", None))
++        self.assertIn("45", lost_number["note"])
++        lost_name = run(Localizer(FakeLLM("我系华记嘅老板！")).localize("我是华记的华叔！", "yue", ("华叔",)))
++        self.assertIsNone(lost_name["gloss"])
++        self.assertIn("华叔", lost_name["note"])
++
++    def test_mandarin_and_accented_hosts_are_left_alone_and_a_slow_model_falls_back(self):
++        llm = FakeLLM("不该用到")
++        for language in ("zh", "enzh", "jazh", None):
++            self.assertIsNone(run(Localizer(llm).localize("人均三十三。", language))["gloss"])
++        self.assertEqual(llm.calls, [])
++        slow = run(Localizer(FakeLLM("太慢了", delay=0.2), timeout=0.05).localize("人均三十三。", "hunan"))
++        self.assertEqual((slow["text"], slow["gloss"]), ("人均三十三。", None))
++        self.assertIn("TimeoutError", slow["note"])
++
++    def test_every_regional_language_has_a_prompt(self):
++        for language in ("sc", "yue", "hunan", "shanghai", "dongbei", "shaanxi", "gansu", "guizhou", "jiangxi", "yunnan", "fr"):
++            self.assertTrue(dialect_of(language))
++            self.assertIn("数字和价格", system_for(language))
++        self.assertIsNone(dialect_of("zh"))
++        self.assertEqual(clean("“改写：辣到个嘴都肿晒”"), "辣到个嘴都肿晒")
++        self.assertIsNone(problem("人均23", "人均23啦", ()))
++
++
++class DialectVoiceTests(unittest.TestCase):
++    def test_the_host_language_arrives_with_its_character_and_cantonese_gets_a_cantonese_voice(self):
++        characters = parse_characters({"a": {"gender": "female", "language": "yue"}, "b": {"gender": "male", "language": "yue"},
++                                       "c": {"gender": "male", "language": "enzh"}}, ["a", "b", "c"])
++        self.assertEqual(characters["a"]["language"], "yue")
++        self.assertNotIn("language", characters["c"])
++        voices = assign_voices("macos-say", ["a", "b", "c"], characters)
++        self.assertEqual(voices["a"], "Sinji")
++        self.assertNotEqual(voices["b"], "Sinji")  # no male Cantonese voice on macOS: a Mandarin one says it
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/tests/test_console_resume.py eat-what-backend/tests/test_console_resume.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/tests/test_console_resume.py	1970-01-01 08:00:00
++++ eat-what-backend/tests/test_console_resume.py	2026-10-18 11:31:49
+@@ -0,0 +1,138 @@
++"""Coming back to a debate: session.start history resumes it instead of opening again (server/console_resume.py)."""
++import unittest
++
++from server.console_resume import ACCEPTED, KEPT, parse_history
++from server.realtime_console import ConsoleSession, catalog
++import tests.test_console_workflow as fixtures
++
++
++class ParseHistoryTests(unittest.TestCase):
++    def test_only_well_formed_rounds_of_restaurants_on_stage_are_kept(self):
++        known = {"dish:a:1", "review:b:2"}
++        rounds = parse_history([
++            {"turnId": "t-1", "restaurantId": "a", "text": " 我家剁椒鱼头。 ", "evidenceIds": ["dish:a:1", "made-up", "dish:a:1", 7]},
++            {"turnId": "user-1", "role": "user", "text": "不吃辣，人均五十", "restaurantId": "a"},
++            {"turnId": "t-1", "restaurantId": "a", "text": "重复的回合"},
++            {"turnId": "t-2", "restaurantId": "outsider", "text": "不在台上"},
++            {"turnId": "t 3", "restaurantId": "a", "text": "turnId 不合格"},
++            {"turnId": "t-4", "restaurantId": "b", "text": "   "},
++            {"turnId": "t-5", "restaurantId": "b", "text": "证据格式不对", "evidenceIds": "review:b:2"},
++            {"turnId": "t-6", "restaurantId": ["a"], "text": "店 ID 不是字符串"},
++            {"turnId": "t-7", "restaurantId": "b", "text": "长" * 700, "evidenceIds": ["review:b:2"]},
++            {"restaurantId": "b", "text": "没有 turnId"}, {"role": "user", "text": 5}, "nonsense", None,
++        ], ["a", "b"], known)
++        self.assertEqual(["t-1", None, "t-7"], [r.get("turnId") for r in rounds])
++        self.assertEqual({"turnId": "t-1", "restaurantId": "a", "text": "我家剁椒鱼头。", "evidenceIds": ["dish:a:1"],
++                          "playedSamples": 0, "presentation": "ended", "introductionCompleted": True}, rounds[0])
++        self.assertEqual({"role": "user", "text": "不吃辣，人均五十"}, rounds[1])
++        self.assertEqual(600, len(rounds[2]["text"]))
++        self.assertEqual([], parse_history({"t-1": {}}, ["a"], known))
++        self.assertEqual([], parse_history(None, ["a"], known))
++
++    def test_one_start_reads_a_bounded_number_of_the_latest_rounds(self):
++        value = [{"turnId": f"t-{i}", "restaurantId": "a", "text": f"第{i}句"} for i in range(ACCEPTED + 50)]
++        rounds = parse_history(value, ["a"], set())
++        self.assertEqual(ACCEPTED, len(rounds))
++        self.assertEqual("t-50", rounds[0]["turnId"])
++
++
++class ResumeTests(unittest.IsolatedAsyncioTestCase):
++    async def asyncSetUp(self):
++        await fixtures.WorkflowTests.asyncSetUp(self)
++
++    async def asyncTearDown(self):
++        await self.session.close()
++
++    def traces(self, stage):
++        return [e["data"] for e in self.ws.events if e["type"] == "trace" and e["data"]["stage"] == stage]
++
++    async def opening(self):
++        """A fresh debate's first round, as the frontend's history keeps it once performed."""
++        self.session.running = True
++        self.assertTrue(await self.session.turn())
++        self.assertTrue(self.traces("persona.introduction"))
++        done = next(e["data"] for e in self.ws.events if e["type"] == "text")
++        return {"turnId": done["turnId"], "restaurantId": done["speakerId"], "text": done["text"],
++                "evidenceIds": [f["id"] for f in done["evidence"]]}
++
++    async def come_back(self, history, preferences=None):
++        """A new session, as the debate page opens when the customer returns to it."""
++        await self.session.close()
++        self.ws = fixtures.Socket()
++        self.session = ConsoleSession(self.ws)
++        self.ws.session = self.session
++        self.session.llm = fixtures.Model()
++        await self.session.command({"type": "session.start", "data": {
++            "restaurantIds": self.ids, "audioEnabled": False, "history": history,
++            **({"preferences": preferences} if preferences else {})}})
++
++    async def test_a_resumed_debate_goes_on_without_introducing_anyone_again(self):
++        opening = await self.opening()
++        speaker = opening["restaurantId"]
++        await self.come_back([opening])
++        resumed, = self.traces("session.resumed")
++        self.assertEqual((1, 0, [speaker]), (resumed["rounds"], resumed["userLines"], resumed["introducedRestaurantIds"]))
++        view = self.session.view()
++        self.assertEqual([speaker], view["introducedRestaurantIds"])
++        self.assertEqual(sorted(opening["evidenceIds"]), view["discussedEvidenceIds"])
++        self.assertEqual("ended", view["recentDialogue"][0]["presentation"])
++
++        self.session.running = True
++        self.assertTrue(await self.session.turn())
++        start = next(e["data"] for e in self.ws.events if e["type"] == "turn" and e["data"]["phase"] == "start")
++        self.assertEqual(speaker, start["restaurantId"])  # The test model picks the same restaurant again.
++        self.assertFalse(start["introduce"])
++        self.assertFalse(self.traces("persona.introduction"))
++        system = next(s for s, payload in self.session.llm.calls if "TurnPlan" in payload)
++        self.assertIn("你已经亮过相", system)
++        self.assertNotIn("首次亮相", system)
++        coordinator = next(p for _, p in self.session.llm.calls if "availableAgents" in p)
++        needs = {a["restaurant"]["id"]: a["character"]["needsIntroduction"] for a in coordinator["availableAgents"]}
++        self.assertEqual({sid: sid != speaker for sid in self.ids}, needs)
++        # Sources already cited are no longer fresh, and the new round cites something else.
++        agent = next(a for a in coordinator["availableAgents"] if a["restaurant"]["id"] == speaker)
++        self.assertFalse(set(opening["evidenceIds"]) & set(agent["freshEvidenceIds"]))
++        done = next(e["data"] for e in self.ws.events if e["type"] == "text")
++        self.assertTrue(done["evidence"])
++        self.assertFalse(set(opening["evidenceIds"]) & {f["id"] for f in done["evidence"]})
++        self.assertEqual([opening["turnId"], done["turnId"]], [h["turnId"] for h in self.session.history])
++
++    async def test_the_customers_last_unanswered_question_is_answered_first(self):
++        opening = await self.opening()
++        question = {"turnId": "user-1", "role": "user", "text": "我不吃辣，预算八十"}
++        await self.come_back([opening, question], {"maxBudget": 150})
++        self.assertEqual(question["text"], self.session.query)
++        self.assertEqual((80, True), (self.session.preferences["maxBudget"], self.session.preferences["noSpice"]))
++        self.assertIn(question["text"], self.session.preferences["userNotes"])
++        self.assertEqual({"maxBudget": 150}, self.session.initial_preferences)
++        self.assertEqual({"role": "user", "text": question["text"]}, self.session.view()["recentDialogue"][-1])
++        self.session.running = True
++        self.assertTrue(await self.session.turn())
++        coordinator = next(p for _, p in self.session.llm.calls if "availableAgents" in p)
++        self.assertEqual(question["text"], coordinator["userQuestion"])
++        self.assertEqual("", self.session.query)
++
++    async def test_long_debates_keep_forty_rounds_and_every_introduction_and_reset_starts_afresh(self):
++        early, late = self.ids
++        facts = {sid: [f["id"] for f in catalog.facts[sid]] for sid in self.ids}
++        history = [{"turnId": "t-early", "restaurantId": early, "text": "我先来。", "evidenceIds": facts[early][:1]}]
++        history += [{"turnId": f"t-{i}", "restaurantId": late, "text": f"第{i}句。", "evidenceIds": [facts[late][i % len(facts[late])]]}
++                    for i in range(59)]
++        await self.come_back(history)
++        self.assertEqual(KEPT, len(self.session.history))
++        self.assertNotIn("t-early", [h["turnId"] for h in self.session.history])
++        self.assertEqual(set(self.ids), self.session.introduced)
++        self.assertIn(facts[early][0], self.session.used)
++        self.assertEqual(60, self.session.index)
++        await self.session.command({"type": "control", "data": {"action": "reset"}})
++        self.assertEqual(([], set(), set(), 0, ""), (self.session.history, self.session.introduced, self.session.used,
++                                                     self.session.index, self.session.query))
++
++    async def test_a_start_without_history_opens_as_before(self):
++        await self.come_back([])
++        self.assertFalse(self.traces("session.resumed"))
++        self.assertEqual(([], []), (self.session.view()["recentDialogue"], self.session.view()["introducedRestaurantIds"]))
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/tests/test_frontend_adaptation.py eat-what-backend/tests/test_frontend_adaptation.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/tests/test_frontend_adaptation.py	1970-01-01 08:00:00
++++ eat-what-backend/tests/test_frontend_adaptation.py	2026-10-18 07:04:44
+@@ -0,0 +1,82 @@
++"""The adaptations made for the 饭店请就位 frontend: its hosts' names, per-host voices, macOS TTS and settings."""
++import asyncio
++import shutil
++import sys
++import unittest
++
++from server.console_persona import build_persona, choose_identity
++from server.voices import assign_voices, parse_characters
++
++SHOP = {"id": "k4ltYupc8AF8MBV1", "name": "湘稻香", "category": "湘菜"}
++
++
++class PersonaOverrideTests(unittest.TestCase):
++    def test_frontend_name_is_spoken_and_tuned_tone_kept(self):
++        own = build_persona(SHOP, "v")
++        renamed = build_persona(SHOP, "v", {"characterName": "郑姐"})
++        self.assertEqual(choose_identity(SHOP)["characterName"], "小湘")
++        self.assertEqual((renamed["characterName"], renamed["nameSource"], renamed["backendCharacterName"]), ("郑姐", "frontend", "小湘"))
++        self.assertIn("你叫郑姐", renamed["systemPrompt"])
++        self.assertNotIn("你叫小湘", renamed["systemPrompt"])
++        # The tuned 小湘 interaction habits survive the new name.
++        self.assertEqual(renamed["speechStyle"]["attack"], own["speechStyle"]["attack"])
++        self.assertEqual(build_persona(SHOP, "v", {})["characterName"], "小湘")
++
++
++class CharacterAndVoiceTests(unittest.TestCase):
++    def test_parse_keeps_only_valid_entries_for_listed_restaurants(self):
++        parsed = parse_characters({"a": {"characterName": " 郑姐 ", "gender": "female", "age": "old"},
++                                   "b": {"characterName": "x" * 20, "gender": "robot"}, "c": {"characterName": "外人"},
++                                   "d": "nonsense"}, ["a", "b", "d"])
++        self.assertEqual(parsed, {"a": {"characterName": "郑姐", "gender": "female", "age": "old"}})
++        self.assertEqual(parse_characters(None, ["a"]), {})
++
++    def test_voices_follow_gender_and_age_and_stay_distinct(self):
++        characters = {"a": {"gender": "female"}, "b": {"gender": "female"}, "c": {"gender": "male", "age": "old"}, "d": {"gender": "male"}}
++        mac = assign_voices("macos-say", ["a", "b", "c", "d"], characters)
++        self.assertEqual(len(set(mac.values())), 4)
++        self.assertTrue(mac["c"].startswith("Grandpa"))
++        cosy = assign_voices("cosyvoice3-local", ["a", "c", "d"], characters)
++        self.assertEqual((cosy["a"], cosy["c"], cosy["d"]), ("rong", "hua", "pierre"))
++        # Without a description the delivered rotation stays.
++        self.assertEqual(assign_voices("cosyvoice3-local", ["x", "y", "z", "w"], {}), {"x": "rong", "y": "hua", "z": "pierre", "w": "rong"})
++
++
++class ParticipationTests(unittest.TestCase):
++    def test_silent_shops_are_named_once_two_have_traded_lines(self):
++        from server.console_coordinator import conversation_balance
++        candidates = {"a": [], "b": [], "c": [], "d": []}
++        heard = [{"turnId": f"t{i}", "restaurantId": sid, "text": "话", "presentation": "ended", "speechAct": act}
++                 for i, (sid, act) in enumerate([("a", "present"), ("b", "attack"), ("a", "respond")])]
++        balance = conversation_balance(candidates, {"recentDialogue": heard})
++        self.assertEqual(balance["notYetSpoken"], ["c", "d"])
++        self.assertEqual(balance["speakerCounts"], {"a": 2, "b": 1, "c": 0, "d": 0})
++        self.assertIn("没开口", balance["mixReminder"])
++        # Everyone has spoken: the delivered pacing reminders apply again.
++        everyone = heard + [{"turnId": "t9", "restaurantId": sid, "text": "话", "presentation": "ended", "speechAct": "present"} for sid in "cd"]
++        self.assertNotIn("没开口", conversation_balance(candidates, {"recentDialogue": everyone})["mixReminder"])
++
++
++@unittest.skipUnless(sys.platform == "darwin" and shutil.which("say"), "macOS system voices only")
++class MacOSTTSTests(unittest.IsolatedAsyncioTestCase):
++    async def test_renders_20ms_frames_of_24khz_pcm(self):
++        from server.providers.macos_tts import MacOSTTS
++        tts = MacOSTTS()
++        frames = [frame async for frame in tts.stream("你好，我是郑姐。", "Tingting")]
++        self.assertTrue(frames)
++        self.assertTrue(all(rate == 24000 for _, rate in frames))
++        self.assertTrue(all(len(pcm) <= 960 and len(pcm) % 2 == 0 for pcm, _ in frames))
++        self.assertGreater(sum(len(pcm) for pcm, _ in frames) / 2 / 24000, 0.5)
++
++    async def test_cancelling_kills_the_render(self):
++        from server.providers.macos_tts import MacOSTTS
++        tts = MacOSTTS()
++        task = asyncio.create_task(tts._render("这是一段很长的台词，" * 30, "rong"))
++        await asyncio.sleep(0.2)
++        task.cancel()
++        with self.assertRaises(asyncio.CancelledError):
++            await task
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --color -ruN -x .venv -x __pycache__ -x *.pyc -x full -x cache -x logs -x tmp -x .env.local -x pretrained_models -x voice-status.json -x *.sqlite3 /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/tests/test_llm_fallback.py eat-what-backend/tests/test_llm_fallback.py
+--- /private/tmp/claude-501/-Users-bryan-Documents-project-F4F-battle/916ab5eb-5ca6-4286-a496-97c14792e9ac/scratchpad/backend-src/eat-what-backend/tests/test_llm_fallback.py	1970-01-01 08:00:00
++++ eat-what-backend/tests/test_llm_fallback.py	2026-10-18 06:17:33
+@@ -0,0 +1,106 @@
++import asyncio
++import unittest
++from types import SimpleNamespace
++
++import httpx
++
++from server.providers.llm import FallbackLLM, OpenAICompatibleLLM, make_llm
++
++
++class FakeProvider:
++    def __init__(self, model, fail=None, deltas=("{\"text\":\"好\"}",), fail_after_start=False):
++        self.model, self.fail, self.deltas, self.fail_after_start = model, fail, deltas, fail_after_start
++        self.base_url = f"https://{model}.example.test/v1"
++        self.configured = True
++        self.calls = 0
++
++    async def stream_text(self, system, user):
++        self.calls += 1
++        if self.fail and not self.fail_after_start:
++            raise self.fail
++        for delta in self.deltas:
++            yield delta
++            if self.fail and self.fail_after_start:
++                raise self.fail
++
++    async def complete_json(self, system, user):
++        self.calls += 1
++        if self.fail:
++            raise self.fail
++        return {"model": self.model}
++
++
++def rejected(status):
++    request = httpx.Request("POST", "https://example.test/v1/chat/completions")
++    return httpx.HTTPStatusError("rejected", request=request, response=httpx.Response(status, request=request))
++
++
++async def collect(llm):
++    return "".join([delta async for delta in llm.stream_text("system", "user")])
++
++
++class FallbackTests(unittest.IsolatedAsyncioTestCase):
++    async def test_primary_answers_while_it_works(self):
++        primary, backup = FakeProvider("primary"), FakeProvider("backup")
++        llm = FallbackLLM(primary, backup)
++        self.assertEqual(await collect(llm), "{\"text\":\"好\"}")
++        self.assertEqual((primary.calls, backup.calls, llm.model), (1, 0, "primary"))
++
++    async def test_backup_answers_when_primary_fails_before_output_and_stays_for_the_cooldown(self):
++        for failure in (rejected(401), rejected(404), rejected(503), httpx.ConnectError("down"), httpx.ReadTimeout("slow")):
++            primary, backup = FakeProvider("primary", fail=failure), FakeProvider("backup")
++            llm = FallbackLLM(primary, backup, cooldown=300)
++            with self.assertLogs("server.providers.llm", "WARNING") as logs:
++                self.assertEqual(await collect(llm), "{\"text\":\"好\"}")
++            self.assertEqual(llm.model, "backup")
++            self.assertNotIn("Bearer", "".join(logs.output))
++            # The dead primary is not retried on every turn.
++            primary.fail = None
++            await collect(llm)
++            self.assertEqual((primary.calls, backup.calls), (1, 2))
++
++    async def test_primary_is_tried_again_after_the_cooldown(self):
++        primary, backup = FakeProvider("primary", fail=rejected(500)), FakeProvider("backup")
++        llm = FallbackLLM(primary, backup, cooldown=0)
++        with self.assertLogs("server.providers.llm", "WARNING"):
++            await collect(llm)
++        primary.fail = None
++        await collect(llm)
++        self.assertEqual((primary.calls, backup.calls, llm.model), (2, 1, "primary"))
++
++    async def test_a_failure_mid_stream_is_not_swapped(self):
++        primary = FakeProvider("primary", fail=httpx.ReadError("cut"), fail_after_start=True)
++        backup = FakeProvider("backup")
++        with self.assertRaises(httpx.ReadError):
++            await collect(FallbackLLM(primary, backup))
++        self.assertEqual(backup.calls, 0)
++
++    async def test_both_failing_raises_the_backup_error(self):
++        llm = FallbackLLM(FakeProvider("primary", fail=rejected(401)), FakeProvider("backup", fail=rejected(403)))
++        with self.assertLogs("server.providers.llm", "WARNING"), self.assertRaises(httpx.HTTPStatusError) as caught:
++            await collect(llm)
++        self.assertEqual(caught.exception.response.status_code, 403)
++
++    async def test_json_completion_falls_back_too(self):
++        llm = FallbackLLM(FakeProvider("primary", fail=httpx.ConnectError("down")), FakeProvider("backup"))
++        with self.assertLogs("server.providers.llm", "WARNING"):
++            self.assertEqual(await llm.complete_json("s", "u"), {"model": "backup"})
++
++    def test_factory_uses_whichever_providers_are_configured(self):
++        base = dict(llm_base_url="", llm_api_key="", llm_model="", llm_timeout_seconds=5,
++                    llm_fallback_base_url="", llm_fallback_api_key="", llm_fallback_model="",
++                    llm_fallback_reasoning_effort="", llm_fallback_cooldown=300)
++        self.assertIsNone(make_llm(SimpleNamespace(**base)))
++        primary = make_llm(SimpleNamespace(**{**base, "llm_base_url": "https://a.test/v1", "llm_model": "m1"}))
++        self.assertIsInstance(primary, OpenAICompatibleLLM)
++        backup_only = make_llm(SimpleNamespace(**{**base, "llm_fallback_base_url": "https://b.test/v1", "llm_fallback_model": "m2"}))
++        self.assertEqual(backup_only.model, "m2")
++        both = make_llm(SimpleNamespace(**{**base, "llm_base_url": "https://a.test/v1", "llm_model": "m1",
++                                           "llm_fallback_base_url": "https://b.test/v1", "llm_fallback_model": "m2"}))
++        self.assertIsInstance(both, FallbackLLM)
++        # The backup gets its own reasoning setting, not the primary's.
++        self.assertEqual(both.fallback.reasoning_effort, "")
++
++
++if __name__ == "__main__":
++    unittest.main()

@@ -1,0 +1,275 @@
+{
+ "id": "a661fa3",
+ "kind": "agent",
+ "name": "塞壬",
+ "fullName": "塞壬 · 星巴克",
+ "restaurant": "星巴克",
+ "plate": "咖啡",
+ "cuisine": "咖啡",
+ "price": null,
+ "distanceKm": null,
+ "edge": "#47987D",
+ "language": "enzh",
+ "persona": "星巴克的塞壬：从海上来的双尾美人鱼，优雅又神秘，讲究咖啡和「第三空间」；招牌拿铁和星冰乐。",
+ "voiceDesc": "英式口音普通话 · 女 · 青年 · 明亮",
+ "look": "双尾美人鱼：头戴缀星王冠，波浪长卷发，两条鱼尾从身侧扬起；绿白两色；品牌色 星巴克绿 #00704A（星巴克的形象，不套用人形模板）",
+ "signature": "得意开场，摊手展示，说到得意处大笑。",
+ "palette": [
+  "#00704A",
+  "#005A3B",
+  "#FFFFFF",
+  "#1A1A1A"
+ ],
+ "defaults": {
+  "expr": "proud",
+  "gesture": "present",
+  "act": "stepIn",
+  "reaction": "haughty"
+ },
+ "punch": "laugh",
+ "personality": "refined",
+ "keywords": [
+  "塞壬",
+  "星巴克",
+  "美人鱼",
+  "咖啡"
+ ],
+ "logo": null,
+ "rig": {
+  "body": "siren",
+  "brand": "starbucks",
+  "gender": "female",
+  "theme": "#00704A",
+  "badgeText": "星",
+  "accessories": []
+ },
+ "voice": {
+  "timbre": "f_young",
+  "speed": 1.073
+ },
+ "greeting": "Hi～我是星巴克的塞壬！一杯拿铁，开启美好的一天！",
+ "shop": {
+  "name": "星巴克",
+  "cuisine": "",
+  "price": null,
+  "distance": null,
+  "dishes": "",
+  "selling": "",
+  "owner": "",
+  "address": "",
+  "desc": ""
+ },
+ "decisions": {
+  "look": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "brand": {
+     "type": "choice",
+     "choice": "starbucks",
+     "probabilities": {
+      "starbucks": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "brand"
+   ],
+   "why": "识别到品牌「星巴克」：由它的形象「塞壬」出镜，不套用人形模板",
+   "note": null
+  },
+  "accent": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "accent": {
+     "type": "choice",
+     "choice": "enzh",
+     "probabilities": {
+      "enzh": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "accent"
+   ],
+   "why": "「星巴克」的出身",
+   "note": null
+  },
+  "assets": {
+   "source": "jev",
+   "model": "jev-1.13.0",
+   "ms": 870,
+   "answers": {
+    "expr": {
+     "type": "choice",
+     "choice": "proud",
+     "confidence": 0.67,
+     "probabilities": {
+      "pitch": 0.18,
+      "proud": 0.6900000000000001,
+      "wink": 0.0,
+      "star": 0.0,
+      "sly": 0.0,
+      "eyeroll": 0.0,
+      "laugh": 0.0,
+      "shock": 0.0,
+      "sweat": 0.0,
+      "angry": 0.0,
+      "win": 0.0,
+      "pout": 0.0,
+      "haughty": 0.13,
+      "think": 0.0,
+      "kiss": 0.0,
+      "smug": 0.0,
+      "nervous": 0.0,
+      "squeal": 0.0
+     }
+    },
+    "punch": {
+     "type": "choice",
+     "choice": "laugh",
+     "confidence": 0.71,
+     "probabilities": {
+      "pitch": 0.0,
+      "proud": 0.06,
+      "wink": 0.08,
+      "star": 0.01,
+      "sly": 0.0,
+      "eyeroll": 0.0,
+      "laugh": 0.73,
+      "shock": 0.0,
+      "sweat": 0.0,
+      "angry": 0.0,
+      "win": 0.0,
+      "pout": 0.0,
+      "haughty": 0.0,
+      "think": 0.0,
+      "kiss": 0.0,
+      "smug": 0.02,
+      "nervous": 0.0,
+      "squeal": 0.1
+     }
+    },
+    "gesture": {
+     "type": "choice",
+     "choice": "present",
+     "confidence": 0.79,
+     "probabilities": {
+      "hip": 0.0,
+      "hip_one": 0.02,
+      "hip_point": 0.0,
+      "point": 0.0,
+      "thumb": 0.02,
+      "wave": 0.13,
+      "wag": 0.0,
+      "present": 0.8,
+      "shrug": 0.0,
+      "clasp": 0.01,
+      "kiss": 0.01,
+      "belly": 0.0,
+      "belly_one": 0.0,
+      "cheer": 0.0,
+      "handsUp": 0.0,
+      "bow": 0.01
+     }
+    },
+    "act": {
+     "type": "choice",
+     "choice": "stepIn",
+     "confidence": 0.98,
+     "probabilities": {
+      "none": 0.01,
+      "hop": 0.0,
+      "jump": 0.0,
+      "shake": 0.0,
+      "bounce": 0.0,
+      "nod": 0.0,
+      "lean": 0.01,
+      "bow": 0.0,
+      "puff": 0.0,
+      "shiver": 0.0,
+      "stepIn": 0.98
+     }
+    },
+    "reaction": {
+     "type": "choice",
+     "choice": "haughty",
+     "confidence": 0.63,
+     "probabilities": {
+      "listen": 0.04,
+      "shock": 0.01,
+      "sweat": 0.0,
+      "angry": 0.0,
+      "laugh": 0.0,
+      "squeal": 0.0,
+      "eyeroll": 0.27,
+      "smug": 0.01,
+      "sly": 0.01,
+      "think": 0.0,
+      "pout": 0.0,
+      "nervous": 0.0,
+      "haughty": 0.66,
+      "star": 0.0
+     }
+    },
+    "energy": {
+     "type": "score",
+     "score": 0.96,
+     "confidence": 0.61,
+     "legend": {
+      "0": "慢条斯理",
+      "1": "平稳",
+      "2": "轻快",
+      "3": "连珠炮"
+     },
+     "probabilities": {
+      "0": 0.22,
+      "1": 0.61,
+      "2": 0.17,
+      "3": 0.0
+     }
+    }
+   },
+   "questions": [
+    "expr",
+    "punch",
+    "gesture",
+    "act",
+    "reaction",
+    "energy"
+   ],
+   "note": null
+  },
+  "voice": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "timbre": {
+     "type": "choice",
+     "choice": "f_young",
+     "probabilities": {
+      "f_young": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "timbre"
+   ],
+   "why": "塞壬的声音",
+   "note": null
+  }
+ },
+ "created": "2026-10-17 17:12:59",
+ "brand": {
+  "id": "starbucks",
+  "name": "星巴克",
+  "mascot": "塞壬"
+ }
+}

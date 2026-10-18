@@ -1,0 +1,170 @@
+[
+ {
+  "text": "湘里人家\n菜系：湘菜\n人均：68元\n距离：1.5km\n招牌：剁椒鱼头、辣椒炒肉\n店主：陈姐\n简介：开了二十年的家常湘菜馆，辣得过瘾，米饭免费续。",
+  "shop": {
+   "name": "湘里人家",
+   "cuisine": "湘菜",
+   "price": 68,
+   "distance": 1.5,
+   "dishes": "剁椒鱼头、辣椒炒肉",
+   "selling": "",
+   "owner": "陈姐",
+   "address": "",
+   "desc": "开了二十年的家常湘菜馆，辣得过瘾，米饭免费续。"
+  }
+ },
+ {
+  "text": "鮨·一期一会\n菜系：日料 / 寿司 Omakase\n人均：398元\n距离：800米\n卖点：主厨每天从筑地直送的鱼，12 贯握寿司，只有 8 个吧台位",
+  "shop": {
+   "name": "鮨·一期一会",
+   "cuisine": "日料 / 寿司 Omakase",
+   "price": 398,
+   "distance": 0.8,
+   "dishes": "",
+   "selling": "主厨每天从筑地直送的鱼，12 贯握寿司，只有 8 个吧台位",
+   "owner": "",
+   "address": "",
+   "desc": ""
+  }
+ },
+ {
+  "text": "Luigi's Pizzeria\n意式手工披萨，柴火窑烤，人均 120，距离 2.3 公里。\n招牌：玛格丽特披萨、提拉米苏\n老板是那不勒斯人，嗓门很大，爱讲他奶奶的配方。",
+  "shop": {
+   "name": "Luigi's Pizzeria",
+   "cuisine": "",
+   "price": 120,
+   "distance": 2.3,
+   "dishes": "玛格丽特披萨、提拉米苏",
+   "selling": "",
+   "owner": "",
+   "address": "",
+   "desc": "意式手工披萨，柴火窑烤，人均 120，距离 2.3 公里。；老板是那不勒斯人，嗓门很大，爱讲他奶奶的配方。"
+  }
+ },
+ {
+  "text": "老北京炸酱面馆\n百年老字号，人均35，距离 600米。\n招牌：炸酱面、卤煮、豆汁儿\n老爷子亲自掌勺，说话慢悠悠的。",
+  "shop": {
+   "name": "老北京炸酱面馆",
+   "cuisine": "",
+   "price": 35,
+   "distance": 0.6,
+   "dishes": "炸酱面、卤煮、豆汁儿",
+   "selling": "",
+   "owner": "",
+   "address": "",
+   "desc": "百年老字号，人均35，距离 600米。；老爷子亲自掌勺，说话慢悠悠的。"
+  }
+ },
+ {
+  "text": "老北京炸酱面馆，百年老字号，人均35，距离 1.25 km，招牌炸酱面。",
+  "shop": {
+   "name": "老北京炸酱面馆",
+   "cuisine": "",
+   "price": 35,
+   "distance": 1.2,
+   "dishes": "",
+   "selling": "",
+   "owner": "",
+   "address": "",
+   "desc": "老北京炸酱面馆，百年老字号，人均35，距离 1.25 km，招牌炸酱面。"
+  }
+ },
+ {
+  "text": "蜜雪冰城",
+  "shop": {
+   "name": "蜜雪冰城",
+   "cuisine": "",
+   "price": null,
+   "distance": null,
+   "dishes": "",
+   "selling": "",
+   "owner": "",
+   "address": "",
+   "desc": ""
+  }
+ },
+ {
+  "text": "店名：霸王茶姬\n品类：原叶鲜奶茶\n价格：¥18\n地址：静安寺店\n特色：伯牙绝弦\n特色：桂馥兰香",
+  "shop": {
+   "name": "霸王茶姬",
+   "cuisine": "原叶鲜奶茶",
+   "price": 18,
+   "distance": null,
+   "dishes": "",
+   "selling": "伯牙绝弦；桂馥兰香",
+   "owner": "",
+   "address": "静安寺店",
+   "desc": ""
+  }
+ },
+ {
+  "text": "一家开在弄堂里的小馆子，没有招牌，只有一块写着「阿婆面」的木板，￥25 一碗，离地铁站 350 米。",
+  "shop": {
+   "name": "一家开在弄堂里的小馆子",
+   "cuisine": "",
+   "price": 25,
+   "distance": 0.3,
+   "dishes": "",
+   "selling": "",
+   "owner": "",
+   "address": "",
+   "desc": "一家开在弄堂里的小馆子，没有招牌，只有一块写着「阿婆面」的木板，￥25 一碗，离地铁站 350 米。"
+  }
+ },
+ {
+  "text": "名称：街角炭火\n距离：0.15公里\n主厨：炭叔\n故事：夜宵老店",
+  "shop": {
+   "name": "街角炭火",
+   "cuisine": "",
+   "price": null,
+   "distance": 0.1,
+   "dishes": "",
+   "selling": "",
+   "owner": "炭叔",
+   "address": "",
+   "desc": "夜宵老店"
+  }
+ },
+ {
+  "text": "  \n\n",
+  "shop": {
+   "name": "",
+   "cuisine": "",
+   "price": null,
+   "distance": null,
+   "dishes": "",
+   "selling": "",
+   "owner": "",
+   "address": "",
+   "desc": ""
+  }
+ },
+ {
+  "text": "超级无敌好吃的火锅店名字特别特别长长长长长长长长长长长长长长\n人均：88.8",
+  "shop": {
+   "name": "",
+   "cuisine": "",
+   "price": 88,
+   "distance": null,
+   "dishes": "",
+   "selling": "",
+   "owner": "",
+   "address": "",
+   "desc": "超级无敌好吃的火锅店名字特别特别长长长长长长长长长长长长长长"
+  }
+ },
+ {
+  "text": "店铺：Chez Pierre\n消费：198\n距离：2.25km\n负责人：Pierre（法国人）",
+  "shop": {
+   "name": "Chez Pierre",
+   "cuisine": "",
+   "price": 198,
+   "distance": 2.2,
+   "dishes": "",
+   "selling": "",
+   "owner": "Pierre（法国人）",
+   "address": "",
+   "desc": ""
+  }
+ }
+]

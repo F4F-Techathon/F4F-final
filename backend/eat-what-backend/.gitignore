@@ -1,0 +1,13 @@
+.env
+.env.local
+.venv/
+__pycache__/
+*.py[cod]
+data/*.sqlite3
+cache/
+node_modules
+.DS_Store
+artifacts/*.log
+artifacts/*.pid
+runtime/
+

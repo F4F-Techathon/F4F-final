@@ -1,0 +1,7 @@
+# Replace demo.example.com with a domain resolving to this machine.
+# Caddy handles HTTPS for the web/token API; LiveKit production TLS/TURN should
+# follow LiveKit's production deployment guide rather than this demo file.
+demo.example.com {
+  reverse_proxy 127.0.0.1:8770
+}
+

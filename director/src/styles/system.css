@@ -1,0 +1,39 @@
+/* 系统 — the architecture as it runs, the registry, and the Jev-vs-film check (agent-studio system.js). */
+.system { overflow-y: auto; padding: 22px 26px 40px; }
+.system h1 { margin: 0 0 4px; font: 600 26px var(--f-serif); }
+.system .sub { color: var(--tx-3); margin: 0 0 16px; font-size: 12.5px; }
+.diag { border-radius: 18px; background: radial-gradient(120% 120% at 50% 0%, #181922, #0e0f14); border: 1px solid var(--line); padding: 10px 14px; }
+.diagsvg { width: 100%; height: auto; display: block; }
+.diagsvg .edge { fill: none; stroke: #343747; stroke-width: 1.5; }
+.diagsvg .edge.gen { stroke: #3a3448; stroke-dasharray: 3 5; }
+.diagsvg .edge.flow { stroke: var(--accent); stroke-dasharray: 6 8; animation: flow 0.8s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -28; } }
+.diagsvg .node rect.box { fill: #171922; stroke: #2d3040; stroke-width: 1.2; transition: 0.3s; }
+.diagsvg .node.gen rect.box { fill: #15141c; stroke: #2f2b3c; }
+.diagsvg .node.future rect.box { stroke-dasharray: 4 4; fill: transparent; }
+.diagsvg .node.hot rect.box { stroke: var(--accent); fill: #221f1a; }
+.diagsvg .nt { font: 600 14px var(--f-ui); fill: #eeecf3; }
+.diagsvg .ns { font: 400 11.5px var(--f-ui); fill: #8e8a9c; }
+.diagsvg .lane { font: 600 11px var(--f-ui); letter-spacing: 0.14em; fill: #6f6c7d; }
+.diagsvg .phonebox { fill: none; stroke: rgba(217, 183, 127, 0.25); stroke-dasharray: 5 6; }
+.sysstat { display: flex; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+.sysstat .pill { height: auto; padding: 8px 14px; font-size: 12.5px; border-radius: 12px; }
+.valbar { display: flex; gap: 12px; align-items: center; margin: 26px 0 12px; flex-wrap: wrap; }
+.valbar h2 { margin: 0; font: 600 18px var(--f-serif); }
+.valbar small { color: var(--tx-3); font-size: 12px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.kpi { padding: 14px 16px; border-radius: var(--r-card); background: var(--bg-2); border: 1px solid var(--line); }
+.kpi small { color: var(--tx-3); font-size: 12px; }
+.kpi b { display: block; font: 600 30px var(--f-mono); margin: 2px 0; }
+.kpi span { font: 11.5px var(--f-mono); color: var(--tx-2); }
+.tablewrap { border-radius: var(--r-card); border: 1px solid var(--line); background: var(--bg-1); overflow: auto; }
+.vt { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.vt th { text-align: left; font: 600 10.5px var(--f-ui); letter-spacing: 0.1em; color: var(--tx-3); padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.vt td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.vt td .cell { display: flex; align-items: center; gap: 6px; }
+.vt td .cell img.face, .vt td .cell .orbface, .vt td .cell .meface, .vt td .cell .blankface { width: 22px; height: 22px; font-size: 11px; }
+.vt .hit { color: #9fdcbc; }
+.vt .near { color: #ecc987; }
+.vt .miss { color: #f0a69d; }
+.vt .sub2 { color: var(--tx-3); font-size: 11px; }
+@media (max-width: 980px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

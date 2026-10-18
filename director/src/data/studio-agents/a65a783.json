@@ -1,0 +1,275 @@
+{
+ "id": "a65a783",
+ "kind": "agent",
+ "name": "茶姬",
+ "fullName": "茶姬 · 霸王茶姬",
+ "restaurant": "霸王茶姬",
+ "plate": "原叶鲜奶茶",
+ "cuisine": "原叶鲜奶茶",
+ "price": null,
+ "distanceKm": null,
+ "edge": "#E26369",
+ "language": "zh",
+ "persona": "霸王茶姬的茶姬：京剧旦角扮相，端庄优雅，说话带点戏腔；讲究原叶鲜奶茶，招牌是伯牙绝弦。",
+ "voiceDesc": "普通话 · 女 · 青年 · 明亮",
+ "look": "京剧旦角：头戴白色绒球头面、两侧垂珠，红色戏服配白色水袖；白净的脸、丹凤眼、樱桃小口；红白两色；品牌色 中国红 #D7262E（霸王茶姬的形象，不套用人形模板）",
+ "signature": "得意开场，摊手展示，说到得意处大笑。",
+ "palette": [
+  "#D7262E",
+  "#AC1E25",
+  "#FFFFFF",
+  "#1A1A1A"
+ ],
+ "defaults": {
+  "expr": "proud",
+  "gesture": "present",
+  "act": "stepIn",
+  "reaction": "eyeroll"
+ },
+ "punch": "laugh",
+ "personality": "refined",
+ "keywords": [
+  "茶姬",
+  "霸王茶姬",
+  "伯牙绝弦",
+  "原叶鲜奶茶"
+ ],
+ "logo": null,
+ "rig": {
+  "body": "opera",
+  "brand": "chagee",
+  "gender": "female",
+  "theme": "#D7262E",
+  "badgeText": "霸",
+  "accessories": []
+ },
+ "voice": {
+  "timbre": "f_young",
+  "speed": 1.091
+ },
+ "greeting": "各位看官，茶姬这厢有礼了！原叶鲜奶茶，来一杯伯牙绝弦吧！",
+ "shop": {
+  "name": "霸王茶姬",
+  "cuisine": "",
+  "price": null,
+  "distance": null,
+  "dishes": "",
+  "selling": "",
+  "owner": "",
+  "address": "",
+  "desc": ""
+ },
+ "decisions": {
+  "look": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "brand": {
+     "type": "choice",
+     "choice": "chagee",
+     "probabilities": {
+      "chagee": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "brand"
+   ],
+   "why": "识别到品牌「霸王茶姬」：由它的形象「茶姬」出镜，不套用人形模板",
+   "note": null
+  },
+  "accent": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "accent": {
+     "type": "choice",
+     "choice": "zh",
+     "probabilities": {
+      "zh": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "accent"
+   ],
+   "why": "「霸王茶姬」的出身",
+   "note": null
+  },
+  "assets": {
+   "source": "jev",
+   "model": "jev-1.13.0",
+   "ms": 446,
+   "answers": {
+    "expr": {
+     "type": "choice",
+     "choice": "proud",
+     "confidence": 0.57,
+     "probabilities": {
+      "pitch": 0.32,
+      "proud": 0.59,
+      "wink": 0.01,
+      "star": 0.0,
+      "sly": 0.0,
+      "eyeroll": 0.0,
+      "laugh": 0.0,
+      "shock": 0.0,
+      "sweat": 0.0,
+      "angry": 0.0,
+      "win": 0.0,
+      "pout": 0.0,
+      "haughty": 0.08,
+      "think": 0.0,
+      "kiss": 0.0,
+      "smug": 0.0,
+      "nervous": 0.0,
+      "squeal": 0.0
+     }
+    },
+    "punch": {
+     "type": "choice",
+     "choice": "laugh",
+     "confidence": 0.77,
+     "probabilities": {
+      "pitch": 0.0,
+      "proud": 0.02,
+      "wink": 0.04,
+      "star": 0.0,
+      "sly": 0.0,
+      "eyeroll": 0.0,
+      "laugh": 0.78,
+      "shock": 0.0,
+      "sweat": 0.0,
+      "angry": 0.0,
+      "win": 0.0,
+      "pout": 0.0,
+      "haughty": 0.0,
+      "think": 0.0,
+      "kiss": 0.0,
+      "smug": 0.01,
+      "nervous": 0.0,
+      "squeal": 0.15
+     }
+    },
+    "gesture": {
+     "type": "choice",
+     "choice": "present",
+     "confidence": 0.8,
+     "probabilities": {
+      "hip": 0.0,
+      "hip_one": 0.01,
+      "hip_point": 0.0,
+      "point": 0.0,
+      "thumb": 0.01,
+      "wave": 0.08,
+      "wag": 0.0,
+      "present": 0.81,
+      "shrug": 0.0,
+      "clasp": 0.03,
+      "kiss": 0.01,
+      "belly": 0.0,
+      "belly_one": 0.0,
+      "cheer": 0.0,
+      "handsUp": 0.0,
+      "bow": 0.05
+     }
+    },
+    "act": {
+     "type": "choice",
+     "choice": "stepIn",
+     "confidence": 0.98,
+     "probabilities": {
+      "none": 0.01,
+      "hop": 0.0,
+      "jump": 0.0,
+      "shake": 0.0,
+      "bounce": 0.0,
+      "nod": 0.0,
+      "lean": 0.0,
+      "bow": 0.01,
+      "puff": 0.0,
+      "shiver": 0.0,
+      "stepIn": 0.98
+     }
+    },
+    "reaction": {
+     "type": "choice",
+     "choice": "eyeroll",
+     "confidence": 0.46,
+     "probabilities": {
+      "listen": 0.060000000000000005,
+      "shock": 0.01,
+      "sweat": 0.0,
+      "angry": 0.01,
+      "laugh": 0.0,
+      "squeal": 0.0,
+      "eyeroll": 0.5,
+      "smug": 0.01,
+      "sly": 0.04,
+      "think": 0.0,
+      "pout": 0.01,
+      "nervous": 0.01,
+      "haughty": 0.35000000000000003,
+      "star": 0.0
+     }
+    },
+    "energy": {
+     "type": "score",
+     "score": 1.29,
+     "confidence": 0.44,
+     "legend": {
+      "0": "慢条斯理",
+      "1": "平稳",
+      "2": "轻快",
+      "3": "连珠炮"
+     },
+     "probabilities": {
+      "0": 0.13,
+      "1": 0.46,
+      "2": 0.39,
+      "3": 0.02
+     }
+    }
+   },
+   "questions": [
+    "expr",
+    "punch",
+    "gesture",
+    "act",
+    "reaction",
+    "energy"
+   ],
+   "note": null
+  },
+  "voice": {
+   "source": "brand",
+   "model": "brand-ip",
+   "ms": 0,
+   "answers": {
+    "timbre": {
+     "type": "choice",
+     "choice": "f_young",
+     "probabilities": {
+      "f_young": 1.0
+     },
+     "confidence": 1.0
+    }
+   },
+   "questions": [
+    "timbre"
+   ],
+   "why": "茶姬的声音",
+   "note": null
+  }
+ },
+ "created": "2026-10-17 17:13:15",
+ "brand": {
+  "id": "chagee",
+  "name": "霸王茶姬",
+  "mascot": "茶姬"
+ }
+}

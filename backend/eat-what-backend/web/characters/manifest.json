@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "renderer": "rigkit-inline-svg",
+  "states": [
+    "idle",
+    "listening",
+    "presenting",
+    "challenging",
+    "defending",
+    "thinking",
+    "selected",
+    "leaving"
+  ],
+  "roles": {
+    "rong": {
+      "look": {
+        "id": "rong",
+        "body": "f_regular",
+        "gender": "female",
+        "age": "middle",
+        "skin": "#F1C09B",
+        "hair": "bun",
+        "hairColor": "#2B1B30",
+        "outfit": "jacket",
+        "hat": "bandana",
+        "theme": "#D45645",
+        "accessories": ["earrings"],
+        "badge": "蓉"
+      }
+    },
+    "hua": {
+      "look": {
+        "id": "hua",
+        "body": "m_round",
+        "gender": "male",
+        "age": "middle",
+        "skin": "#E8B28B",
+        "hair": "side",
+        "hairColor": "#242127",
+        "outfit": "tang",
+        "hat": "none",
+        "theme": "#3F896C",
+        "accessories": ["mustache"],
+        "badge": "鲜"
+      }
+    },
+    "pierre": {
+      "look": {
+        "id": "pierre",
+        "body": "m_tall",
+        "gender": "male",
+        "age": "young",
+        "skin": "#F4C9A8",
+        "hair": "curly",
+        "hairColor": "#5A3E2F",
+        "outfit": "chef",
+        "hat": "toque",
+        "theme": "#7460BE",
+        "accessories": [],
+        "badge": "P"
+      }
+    }
+  }
+}

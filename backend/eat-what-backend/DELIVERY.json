@@ -1,0 +1,21 @@
+{
+  "createdAt": "2026-10-18T05:25:27.598519+08:00",
+  "main": "python scripts/run_backend.py",
+  "check": "python scripts/run_backend.py --check",
+  "dependencies": "requirements-handoff.txt",
+  "documentationArchive": "吃啥-交接文档-2026-10-18.zip",
+  "personaVersion": "persona-v11",
+  "businessSchema": "由前端确定，后端适配；快照不是前端必须采用的业务类型",
+  "excluded": [
+    "credentials",
+    "virtual environments",
+    "model weights",
+    "caches",
+    "session database",
+    "local logs"
+  ],
+  "vendorCommits": {
+    "CosyVoice": "074ca6dc9e80a2f424f1f74b48bdd7d3fea531cc",
+    "Matcha-TTS": "dd9105b34bf2be2230f4aa1e4769fb586a3c824e"
+  }
+}
